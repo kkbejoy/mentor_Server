@@ -1,6 +1,6 @@
 const tokenSchema = require("../models/tokens");
 
-//Create a Document for every Refresh togen generation
+//Create a TIME TO LEAVE Document for every Refresh togen generation
 const createTokenDocument = async (tokenData) => {
   try {
     // const newToken = new tokenSchema(tokenData);
@@ -26,7 +26,18 @@ const deleteToken = async (userId, token) => {
   }
 };
 
+//Find refresh token with token id
+const findRefreshToken = async (refreshTokenId) => {
+  try {
+    const token = await tokenSchema.findOne({ token: refreshTokenId });
+    if (!token) return null;
+    return token;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   createTokenDocument,
   deleteToken,
+  findRefreshToken,
 };

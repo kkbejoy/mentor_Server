@@ -5,25 +5,28 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../../middlewares/jwtGen");
-const { deleteToken } = require("../../utilities/tokens");
+const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
 //New Mentor Registration
 const createMentor = async (req, res) => {
   try {
     const { email, password } = req.body;
     const newMentorDetails = req.body;
     const existingUser = await mentorSchema.findOne({ email: email });
-
+    console.log(existingUser);
     if (existingUser?.isApproved == false) {
       return res.status(403).json({
         status: false,
-        error: "Your Application is undergoing scrutiny. Please wait",
+        error:
+          "Your Previous application is Pending review. Your Application is undergoing scrutiny. Please wait",
       });
     }
 
     if (existingUser?.isBlocked) {
       return res.status(403).json({
         status: false,
-        error: "Mentor blocked, Please contact the moderator",
+        error:
+          "Account blocked, Please contact the support team for resolution",
+        blocked: true,
       });
     }
 
@@ -133,8 +136,15 @@ const getNewAccessToken = async (req, res) => {
   try {
     const { refreshToken, mentorId } = req.body;
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY);
+    const refreshTokenExistence = await tok;
     console.log("decoded JWT", decoded, mentorId);
-
+    const token = await findRefreshToken(refreshToken);
+    if (!token) {
+      res.status(401).json({
+        status: false,
+        message: "Refresh token expired. Please Login Again",
+      });
+    }
     const mentorDetails = await mentorSchema.findById(mentorId);
     const { _id, email, firstName } = mentorDetails;
     const newAccessToken = await generateAccessToken({

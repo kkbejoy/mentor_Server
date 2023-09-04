@@ -14,7 +14,7 @@ const menteeSchema = new Schema({
     required: true,
     unique: true,
   },
-  phoneNumber: {
+  phone: {
     type: Number,
     require: true,
   },

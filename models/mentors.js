@@ -15,7 +15,7 @@ const mentorSchema = new Schema(
       required: true,
       unique: true,
     },
-    phoneNumber: {
+    phone: {
       type: Number,
       required: true,
       unique: true,
@@ -30,6 +30,9 @@ const mentorSchema = new Schema(
       type: String,
     },
     bio: {
+      type: String,
+    },
+    documentsUrl: {
       type: String,
     },
     educationalQualification: {

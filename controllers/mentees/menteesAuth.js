@@ -8,7 +8,7 @@ const {
   generateRefreshToken,
 } = require("../../middlewares/jwtGen");
 
-const { deleteToken } = require("../../utilities/tokens");
+const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
 
 //Creating New Mentees
 const createMentee = async (req, res) => {
@@ -18,12 +18,15 @@ const createMentee = async (req, res) => {
     const existingUser = await menteeSchema.findOne({ email: email });
 
     if (existingUser?.isBlocked) {
+      console.log("a");
       return res
         .status(403)
         .json({ error: "User blocked, Please contact the moderator" });
     }
 
     if (existingUser) {
+      console.log("a");
+
       return res
         .status(409)
         .json({ error: "User with this email id already exists" });
@@ -37,6 +40,7 @@ const createMentee = async (req, res) => {
 
     const newMentee = new menteeSchema(newMenteeDetails);
     await newMentee.save();
+    console.log(newMentee);
     return res.status(201).json({
       message: `New user with username ${newMentee.firstName} created `,
     });
@@ -49,6 +53,7 @@ const createMentee = async (req, res) => {
 //Verifying mentees credentials
 const getMenteeTokens = async (req, res) => {
   try {
+    console.log("hello");
     const { email, password } = req.body;
     const existingUser = await menteeSchema.findOne({ email: email });
     const { _id, firstName } = existingUser;
@@ -96,14 +101,21 @@ const menteeLogout = async (req, res) => {
 //Regenerate Access Tokens
 const getNewAccessToken = async (req, res) => {
   try {
-    const { refreshToken, menteeId } = req.body;
+    const { refreshToken } = req.body;
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY);
-    console.log("decoded JWT", decoded, menteeId);
+    const token = await findRefreshToken(refreshToken);
+    if (!token) {
+      res.status(401).json({
+        status: false,
+        message: "Refresh token expired. Please Login Again",
+      });
+    }
+    console.log("decoded JWT", decoded);
 
-    const menteeDetails = await menteeSchema.findById(menteeId);
-    const { _id, email, firstName } = menteeDetails;
+    const menteeDetails = await menteeSchema.findById(decoded.id);
+    const { id, email, firstName } = menteeDetails;
     const newAccessToken = await generateAccessToken({
-      id: _id,
+      id: id,
       email: email,
       name: firstName,
     });
@@ -124,9 +136,42 @@ const getNewAccessToken = async (req, res) => {
     }
   }
 };
+
+//Google success redirect for JWT generation
+
+const googleAuthSuccess = async (req, res) => {
+  try {
+    console.log("Google auth controller function");
+    const { email, _id, firstName } = req.user;
+    const accessToken = await generateAccessToken({
+      id: _id,
+      email: email,
+      name: firstName,
+    });
+    const refreshToken = await generateRefreshToken({
+      id: _id,
+      email: email,
+      name: firstName,
+    });
+
+    res.status(200).json({
+      menteeName: firstName,
+      menteeId: _id,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      message: "Login Successfull",
+    });
+    console.log(req.user);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "Operation failed" });
+  }
+};
+
 module.exports = {
   createMentee,
   getMenteeTokens,
   getNewAccessToken,
   menteeLogout,
+  googleAuthSuccess,
 };

@@ -46,7 +46,7 @@ const moderatorLogin = async (req, res) => {
       status: true,
       message: "Login Successfull",
       moderatorAccessToken: accessToken,
-      moderatorRfreshToken: refreshToken,
+      moderatorRefreshToken: refreshToken,
     });
   } catch (error) {
     console.log(error.stack);

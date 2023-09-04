@@ -13,7 +13,7 @@ const {
 } = require("../validators/mentor");
 
 //Mentor Registration
-router.route("/register").post(mentorRegistrationRules, createMentor);
+router.route("/register").post(createMentor);
 //Mentor Login
 router.route("/login").post(mentorLoginRules, mentorLogin);
 
