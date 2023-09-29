@@ -2,23 +2,38 @@ const passport = require("passport");
 const menteeSchema = require("../../models/mentees");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const {
   generateAccessToken,
   generateRefreshToken,
+  geneateJwtForEmailVerification,
 } = require("../../middlewares/jwtGen");
-
+const {
+  approveMentees,
+  fetchMenteeDataFromEmail,
+  addStripeIdToMentee,
+  fetchMenteeDataFromId,
+} = require("../../utilities/mentees");
 const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
+const { sentMail } = require("../../middlewares/nodeMailer");
+const { create } = require("express-hbs");
+const {
+  createCheckoutSession,
+  createStripeCustomer,
+} = require("../../utilities/paymentUtilities");
+const {
+  createEntollment,
+} = require("../../utilities/enrollmentModelUtilities");
 
 //Creating New Mentees
 const createMentee = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, firstname } = req.body;
     const newMenteeDetails = req.body;
     const existingUser = await menteeSchema.findOne({ email: email });
 
     if (existingUser?.isBlocked) {
-      console.log("a");
       return res
         .status(403)
         .json({ error: "User blocked, Please contact the moderator" });
@@ -41,6 +56,11 @@ const createMentee = async (req, res) => {
     const newMentee = new menteeSchema(newMenteeDetails);
     await newMentee.save();
     console.log(newMentee);
+    // const newEmail = "kkbejoy@ymail.com";
+    const jwt = await geneateJwtForEmailVerification({ firstname, email });
+    const message = ` Good morning ${firstname}. Your account has been successfully created. Please go to this link to verify your account. ${process.env.CLIENT_url}/api/mentees/verify/${jwt}`;
+    await sentMail(email, "Verfication", message); //Sending Acknowlkegment with Link for verification mail to the user
+
     return res.status(201).json({
       message: `New user with username ${newMentee.firstName} created `,
     });
@@ -50,7 +70,39 @@ const createMentee = async (req, res) => {
   }
 };
 
-//Verifying mentees credentials
+//Function which verify the Email ID provided by the Mentees
+
+const verifyEmailIdFromJWT = async (req, res) => {
+  try {
+    const { jwt: jwtToken } = req.params;
+    const decoded = await jwt.verify(jwtToken, process.env.REFRESH_SECRET_KEY);
+    const { email } = decoded;
+    console.log(email);
+    const mentee = await fetchMenteeDataFromEmail(email);
+    const { _id, firstName, lastName } = mentee;
+    const name = firstName + lastName;
+    const response = await approveMentees(email);
+    const createStripeAccount = await createStripeCustomer(name, email, _id);
+    await addStripeIdToMentee(_id, createStripeAccount.id);
+    console.log(createStripeAccount);
+    const responseObject = {
+      title: " Success",
+      message: "User email was verified successfully",
+    };
+
+    res.render("emailVerification", { response: responseObject });
+  } catch (error) {
+    const responseObject = {
+      title: " Failed",
+      message: "User Email Verification Failed",
+      error: error.message,
+    };
+    console.log(error);
+    res.render("emailVerification", { response: responseObject });
+  }
+};
+
+//Verifying mentees credentials // LOGIN
 const getMenteeTokens = async (req, res) => {
   try {
     console.log("hello");
@@ -86,8 +138,9 @@ const getMenteeTokens = async (req, res) => {
 //Mentee Logout
 const menteeLogout = async (req, res) => {
   try {
+    console.log(req.headers.authorization);
     const { menteeId, refreshToken } = req.body;
-    // console.log(menteeId, refreshToken);
+    console.log(menteeId, refreshToken);
     await deleteToken(menteeId, refreshToken);
     // await popRefreshToken(menteeId, refreshToken);
     return res
@@ -102,6 +155,7 @@ const menteeLogout = async (req, res) => {
 const getNewAccessToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
+    console.log(req.body);
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY);
     const token = await findRefreshToken(refreshToken);
     if (!token) {
@@ -168,10 +222,99 @@ const googleAuthSuccess = async (req, res) => {
   }
 };
 
+// //Stripe config
+// const getStripePublishableKey = async (req, res) => {
+//   try {
+//     const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+//     res.send({ publishableKey: stripePublishableKey });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+// //Stripe Payment intent
+
+// const getStripePaymentIntent = async (req, res) => {
+//   try {
+//     console.log("hello");
+//     const customer = await stripe.customers.create({
+//       name: "Jenny Rosen",
+//       email: "jenny@example.com",
+//       address: {
+//         line1: "510 Townsend St",
+//         postal_code: "98140",
+//         city: "San Francisco",
+//         state: "CA",
+//         country: "US",
+//       },
+//     });
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       customer: customer.id,
+//       description: "Software development services Test",
+//       shipping: {
+//         name: "Jenny Rosen",
+//         address: {
+//           line1: "510 Townsend St",
+//           postal_code: "98140",
+//           city: "San Francisco",
+//           state: "CA",
+//           country: "US",
+//         },
+//       },
+//       currency: "EUR",
+//       amount: 1999,
+//       automatic_payment_methods: { enabled: true },
+//     });
+//     console.log("Payment Intent", paymentIntent);
+//     res.send({
+//       clientSecret: paymentIntent.client_secret,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(400).send({ error: { message: error.message } });
+//   }
+// };
+
+//Stripe Checkout Function
+const stripeCheckoutSession = async (req, res) => {
+  try {
+    const { mentorPriceId, menteeId, mentorId } = req.body;
+    const { stripeId, firstName, email } = await fetchMenteeDataFromId(
+      menteeId
+    );
+    console.log(
+      "Details to Checkout",
+      mentorPriceId,
+      menteeId,
+      mentorId,
+      email
+    );
+    const checkoutResponse = await createCheckoutSession(
+      mentorPriceId,
+      stripeId,
+      email,
+      mentorId
+    );
+    const enrollmentObject = {
+      menteeId: menteeId,
+      mentorId: mentorId,
+      checkoutId: checkoutResponse.id,
+    };
+    await createEntollment(enrollmentObject);
+
+    res.status(201).json({ status: true, url: checkoutResponse.url });
+  } catch (error) {
+    console.log(error);
+  }
+};
 module.exports = {
   createMentee,
+  verifyEmailIdFromJWT,
   getMenteeTokens,
   getNewAccessToken,
   menteeLogout,
   googleAuthSuccess,
+  // getStripePublishableKey,
+  // getStripePaymentIntent,
+  stripeCheckoutSession,
 };

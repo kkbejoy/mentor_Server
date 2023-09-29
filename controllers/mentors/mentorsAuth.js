@@ -6,6 +6,7 @@ const {
   generateRefreshToken,
 } = require("../../middlewares/jwtGen");
 const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
+const { createSubscriptionPlan } = require("../../utilities/paymentUtilities");
 //New Mentor Registration
 const createMentor = async (req, res) => {
   try {
@@ -36,12 +37,20 @@ const createMentor = async (req, res) => {
         error: "Mentor with this email id already exists",
       });
     }
-
+    //Subscription FUnction
+    // const planId = await createSubscriptionPlan(
+    //   "Service XYZ",
+    //   "Monthly plan",
+    //   "month",
+    //   2,
+    //   "usd"
+    // );
+    // console.log("Stripe Plan id:", planId);
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(password, salt);
     newMentorDetails.password = hashedPassword;
-
+    // newMentorDetails.stripePlanId = planId;
     const newMentor = new mentorSchema(newMentorDetails);
     await newMentor.save();
 

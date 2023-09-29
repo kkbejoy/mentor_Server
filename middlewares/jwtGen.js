@@ -44,7 +44,19 @@ const generateRefreshToken = async (user) => {
   }
 };
 
+//JWT token for verifying Email
+const geneateJwtForEmailVerification = async (user) => {
+  try {
+    const expiry = "1d";
+    const jwtToken = jwt.sign(user, process.env.REFRESH_SECRET_KEY, {
+      expiresIn: expiry,
+    });
+    return jwtToken;
+  } catch (error) {}
+};
+
 module.exports = {
   generateAccessToken,
   generateRefreshToken,
+  geneateJwtForEmailVerification,
 };

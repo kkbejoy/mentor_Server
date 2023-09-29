@@ -18,7 +18,7 @@ const mentorSchema = new Schema(
     phone: {
       type: Number,
       required: true,
-      unique: true,
+      unique: false,
     },
     jobTitle: {
       type: String,
@@ -82,6 +82,9 @@ const mentorSchema = new Schema(
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+    stripePriceId: {
+      type: String,
     },
   },
   { timestamps: true }

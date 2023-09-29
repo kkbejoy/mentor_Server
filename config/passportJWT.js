@@ -54,6 +54,7 @@ const moderatorStrategy = new Strategy(options, async (payload, done) => {
     // console.log(date);
     const moderatorId = payload.id;
     const moderator = await moderatorSchema.findById(moderatorId);
+    console.log("Moderator", moderator);
     if (moderator) {
       console.log("Modearator Auth passed");
       return done(null, moderator);

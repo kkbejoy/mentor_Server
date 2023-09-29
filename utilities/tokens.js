@@ -20,7 +20,7 @@ const deleteToken = async (userId, token) => {
       userId: userId,
       token: token,
     });
-    console.log(result);
+    console.log("Token deletion:", result);
   } catch (error) {
     throw error;
   }
@@ -30,6 +30,7 @@ const deleteToken = async (userId, token) => {
 const findRefreshToken = async (refreshTokenId) => {
   try {
     const token = await tokenSchema.findOne({ token: refreshTokenId });
+
     if (!token) return null;
     return token;
   } catch (error) {

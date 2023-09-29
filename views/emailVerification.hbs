@@ -1,0 +1,23 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Success Page</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f0f0f0;
+      text-align: center; margin: 0; padding: 0; } .container {
+      background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0px
+      0px 10px rgba(0, 0, 0, 0.1); margin: 20px auto; max-width: 600px; } h1 {
+      color: #4caf50; } p { font-size: 18px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">{{responseObject}}
+      <h1>{{response.title}}</h1>
+      <p>{{response.message}}.</p>
+      <p>{{response.error}}</p>
+      <a href="http://localhost:5173">Home Page</a>
+      <!-- You can add more content or links here -->
+    </div>
+  </body>
+</html>

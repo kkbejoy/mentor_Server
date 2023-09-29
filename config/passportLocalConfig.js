@@ -14,8 +14,11 @@ try {
       async (username, password, done) => {
         try {
           console.log(username, password);
-          const mentee = await Mentee.findOne({ email: username });
-          //   console.log("mentee", mentee);
+          const mentee = await Mentee.findOne({
+            email: username,
+            isBlocked: false,
+          });
+          console.log("mentee", mentee);
           if (!mentee) {
             console.log("auth failed");
             return done(null, false, { message: "User not found" });

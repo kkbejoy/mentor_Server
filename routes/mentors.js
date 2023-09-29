@@ -6,6 +6,11 @@ const {
   mentorLogout,
   getNewAccessToken,
 } = require("../controllers/mentors/mentorsAuth");
+
+const {
+  createNewAvailbleSlotForMentor,
+  getAllSlotForMentorId,
+} = require("../controllers/mentors/slotAvailabilityControllers");
 const { mentorAuthMiddleware } = require("../config/passportJWT");
 const {
   mentorLoginRules,
@@ -23,3 +28,9 @@ router.post("/regenerate_access_token", getNewAccessToken);
 //Mentor LogOut
 router.route("/logout").post(mentorAuthMiddleware, mentorLogout);
 module.exports = router;
+
+//Time Slots Routes
+router
+  .route("/available-timeslots/:id")
+  .post(createNewAvailbleSlotForMentor)
+  .get(getAllSlotForMentorId);

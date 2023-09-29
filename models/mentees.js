@@ -36,11 +36,18 @@ const menteeSchema = new Schema({
   },
   isActive: {
     type: Boolean,
-    default: true,
+    default: false,
   },
   isBlocked: {
     type: Boolean,
     default: false,
+  },
+  isApproved: {
+    type: Boolean,
+    default: false,
+  },
+  stripeId: {
+    type: String,
   },
   // refreshTokens: {
   //   type: Array,

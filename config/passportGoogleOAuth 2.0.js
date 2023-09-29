@@ -23,6 +23,7 @@ const passportGoogleOAuth = new GoogleStrategy(
   async function (accessToken, refreshToken, profile, cb) {
     //This function will be excecuted only on successfull authentication
     try {
+      console.log("google auth");
       const emailFromGoogle = profile.emails[0].value;
       console.log(emailFromGoogle);
 

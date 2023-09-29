@@ -5,6 +5,9 @@ const mongoConnect = require("./config/databaseConfig");
 const passport = require("passport");
 const logger = require("morgan");
 const cors = require("cors");
+const hbs = require("express-hbs");
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 require("./config/passportLocalConfig");
 
 const menteesRoutes = require("./routes/mentees");
@@ -12,10 +15,22 @@ const mentorRoutes = require("./routes/mentors");
 const moderatorRoutes = require("./routes/moderators");
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "*",
     credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
+
+app.engine(
+  "hbs",
+  hbs.express4({
+    partialsDir: __dirname + "/views/partials",
+  })
+);
+app.set("view engine", "hbs");
+
 app.use(passport.initialize());
 app.use(logger("dev"));
 app.use(express.json());

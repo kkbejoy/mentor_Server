@@ -2,18 +2,27 @@ const express = require("express");
 const router = express.Router();
 const {
   moderatorLogin,
+  getNewAccessToken,
   getAllMentees,
   getAllMentors,
   getAllMentorRequests,
   modifyMentorRequest,
   blockOrUnBlockMentor,
   blockOrUnBlockMentees,
+  moderatorLogout,
 } = require("../controllers/moderators/moderators");
 const { moderatorLoginRules } = require("../validators/moderator");
 const { modearatorAuthMiddleware } = require("../config/passportJWT");
 
 //Moderator Login
 router.route("/login").post(moderatorLoginRules, moderatorLogin);
+
+//Moderator Regenerate Access Token
+
+router.route("/regenerate_access_token").post(getNewAccessToken);
+
+//Moderator LogOut
+router.route("/logout").post(modearatorAuthMiddleware, moderatorLogout);
 
 // Get mentees data
 router.route("/mentees").get(modearatorAuthMiddleware, getAllMentees);
