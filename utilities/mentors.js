@@ -32,7 +32,7 @@ const modifyIsApprovedField = async (mentorId) => {
     console.log(newStatus);
     const update = { $set: { isApproved: !newStatus } };
     const response = await mentorSchema.findByIdAndUpdate(mentorId, update);
-    console.log(response);
+    console.log("Is approved Field change", response);
     return true;
   } catch (error) {
     throw error;
@@ -64,6 +64,7 @@ const getMentorsFromSearchInput = async (searchInput) => {
     if (searchInput != null || searchInput.trim() !== "null") {
       query = {
         firstName: { $regex: new RegExp(searchInput, "i") },
+        isApproved: true,
       };
       // That i is to make the expression case insensitive
     }
@@ -80,7 +81,7 @@ const getMentorsFromSearchInput = async (searchInput) => {
 const getMentorData = async (mentorId) => {
   try {
     console.log(mentorId);
-    const mentorData = await mentorSchema.findById(mentorId);
+    const mentorData = await mentorSchema.findById(mentorId, { password: 0 });
     console.log(mentorData);
     return mentorData;
   } catch (error) {
@@ -95,9 +96,25 @@ const updateMentorDocumentWithPriceId = async (mentorId, priceId) => {
     const response = await mentorSchema.findByIdAndUpdate(mentorId, {
       stripePriceId: priceId,
     });
+    console.log("Strip Id Updatation Status to Db:", response);
     return response;
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+};
+
+//Update mentor Profile
+
+const updateMentorProfileDetails = async (mentorId, updationObject) => {
+  try {
+    const response = await mentorSchema.findByIdAndUpdate(
+      mentorId,
+      updationObject
+    );
+    console.log("Response from mentor Profile Updatipn:", response);
+    return response;
+  } catch (error) {
     throw error;
   }
 };
@@ -109,4 +126,5 @@ module.exports = {
   getMentorsFromSearchInput,
   getMentorData,
   updateMentorDocumentWithPriceId,
+  updateMentorProfileDetails,
 };

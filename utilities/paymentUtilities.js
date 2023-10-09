@@ -21,7 +21,7 @@ const createSubscribableProduct = async (
       product: product.id,
       nickname: "Monthly Fees",
       recurring: { interval: "month" },
-      unit_amount: priceAmount, // Amount in cents
+      unit_amount: priceAmount * 100, // Amount in INR, conversionto rs
       currency: "inr",
     });
 
@@ -71,7 +71,7 @@ const createCheckoutSession = async (
       line_items: [
         {
           price: subscriptionPriceId,
-          quantity: 1,
+          quantity: 4,
         },
       ],
       success_url: `${process.env.CLIENT_url}/mentees/payment/success/${mentorId}`,

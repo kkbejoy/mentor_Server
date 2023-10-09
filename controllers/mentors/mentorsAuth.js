@@ -69,7 +69,7 @@ const mentorLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     const mentor = await mentorSchema.findOne({ email: email });
-
+    console.log("Mentor Details", mentor);
     if (!mentor) {
       return res.status(409).json({
         status: false,

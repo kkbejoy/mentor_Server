@@ -32,6 +32,10 @@ const mentorSchema = new Schema(
     bio: {
       type: String,
     },
+    shortBio: {
+      type: String,
+    },
+
     documentsUrl: {
       type: String,
     },
@@ -84,6 +88,9 @@ const mentorSchema = new Schema(
       default: false,
     },
     stripePriceId: {
+      type: String,
+    },
+    profileImageUrl: {
       type: String,
     },
   },

@@ -8,6 +8,9 @@ const {
   fetchSubsctiptionId,
 } = require("../../utilities/paymentUtilities");
 const { addStripeIdToMentee } = require("../../utilities/mentees");
+const {
+  fetchAllMentorsWithTheirDetails,
+} = require("../../utilities/enrollmentUtilities");
 //Fetch Mentors Search Result
 const fetchMentorsSearchResult = async (req, res) => {
   try {
@@ -20,6 +23,7 @@ const fetchMentorsSearchResult = async (req, res) => {
     res.status(200);
   } catch (error) {
     console.log(error);
+    return res.status(400).json({ error: "Operation failed" });
   }
 };
 
@@ -28,26 +32,21 @@ const fetchMentorProfileDetails = async (req, res) => {
   try {
     const { id: mentorId } = req.params;
     const mentorData = await getMentorData(mentorId);
-
     res.status(200).json({ status: true, mentorData });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "Operation failed" });
+  }
 };
 
 //Trail Route
 
 const trail = async (req, res) => {
   try {
-    console.log("hello");
-    const name = "Bejoy K K";
-    const email = "kkbejoy@gmail.com";
-    const id =
-      "cs_test_a1mCeTi1ZV2UcEbkj2qHo0V7Ja5p7TywhLszYNMd0UchEl5o0ly0Sn5amj";
-    const subId = await fetchSubsctiptionId(id);
-
-    console.log("subid", subId);
     return res.status(200);
   } catch (error) {
     console.log("Error From trail Con", error);
+    return res.status(400).json({ error: "Operation failed" });
   }
 };
 

@@ -183,7 +183,7 @@ const blockOrUnBlockMentor = async (req, res) => {
   try {
     const { mentorId } = req.body;
     if (!mentorId) throw new Error("Mentor id null");
-    (await modifyIsBlockedFie) + ld(mentorId);
+    await modifyIsBlockedField(mentorId);
     res.status(200).json({ status: true, message: "Mentor Status Changed" });
   } catch (error) {
     console.log(error);

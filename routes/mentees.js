@@ -16,6 +16,12 @@ const {
   getStripePaymentIntent,
   stripeCheckoutSession,
 } = require("../controllers/mentees/menteesAuth");
+
+const {
+  fetchListOfMentorsSubscribed,
+  mentorsTimeSlotAvailabilityList,
+  fixMentorTimeSlot,
+} = require("../controllers/mentees/menteeAutherisedControllers");
 const {
   fetchMentorsSearchResult,
   fetchMentorProfileDetails,
@@ -30,6 +36,7 @@ const {
 const {
   approveEnrollementFromPaymentSuccess,
 } = require("../controllers/mentees/paymentControllers");
+
 //Mentee Registration
 router.route("/register").post(menteeRegistrationRules, createMentee);
 
@@ -62,18 +69,31 @@ router.get("/mentors/:search", fetchMentorsSearchResult);
 //Mentor Profile Data
 router.get("/mentor/profile/:id", fetchMentorProfileDetails);
 
-//Stripe config
-// router.get("/stripe-config", getStripePublishableKey);
-//Stripe Payment Intent
-// router.post("/create-payment-intent", getStripePaymentIntent);
-
 //Stripe Checkout
-router.post("/create-checkout", stripeCheckoutSession);
+router.post("/create-checkout", menteeAuthMiddleware, stripeCheckoutSession);
 
 //Payment succss page To Enrollment Aproval
-router.post("/enrollment-success", approveEnrollementFromPaymentSuccess);
+router.post(
+  "/enrollment-success",
+  menteeAuthMiddleware,
+  approveEnrollementFromPaymentSuccess
+);
 
+// Fetching List of  subscribed Mentors
+router.get(
+  "/subscribed-mentors/:menteeId",
+  menteeAuthMiddleware,
+  fetchListOfMentorsSubscribed
+);
+
+// Fetching Details of timeSlots for Mentees //Book Mentor from available Time slots  By Mentee
+
+router
+  .route("/timeslots/:menteeId")
+  .get(menteeAuthMiddleware, mentorsTimeSlotAvailabilityList)
+  .post(menteeAuthMiddleware, fixMentorTimeSlot);
+
+// router.post("/fix-slot", fixMentorTimeSlot);
 //Trail route
-
 router.route("/trail").get(trail);
 module.exports = router;

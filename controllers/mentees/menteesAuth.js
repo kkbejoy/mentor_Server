@@ -22,9 +22,7 @@ const {
   createCheckoutSession,
   createStripeCustomer,
 } = require("../../utilities/paymentUtilities");
-const {
-  createEntollment,
-} = require("../../utilities/enrollmentModelUtilities");
+const { createEntollment } = require("../../utilities/enrollmentUtilities");
 
 //Creating New Mentees
 const createMentee = async (req, res) => {
@@ -301,10 +299,11 @@ const stripeCheckoutSession = async (req, res) => {
       checkoutId: checkoutResponse.id,
     };
     await createEntollment(enrollmentObject);
-
+    console.log("checkout res:", checkoutResponse);
     res.status(201).json({ status: true, url: checkoutResponse.url });
   } catch (error) {
     console.log(error);
+    return res.status(400).json({ error: "Operation failed" });
   }
 };
 module.exports = {

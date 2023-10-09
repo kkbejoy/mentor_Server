@@ -23,6 +23,7 @@ const enrollmentSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    liveCounts: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

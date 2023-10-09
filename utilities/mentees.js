@@ -77,6 +77,24 @@ const addStripeIdToMentee = async (menteeId, stripeId) => {
     throw error;
   }
 };
+
+// fetch Mentee Details form array of Mentee Ids
+// const fetchMenteeDetailsFromArray = async (menteesArray) => {
+//   try {
+//     const menteesList = await menteeSchema.find(
+//       {
+//         _id: { $in: menteesArray },
+//       },
+//       {
+//         firstName: 1,
+//         lastName: 1,
+//       }
+//     );
+//     return menteesList;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
 module.exports = {
   allMenteesWithDetails,
   modifyMenteeIsBlockedField,
@@ -84,4 +102,5 @@ module.exports = {
   fetchMenteeDataFromEmail,
   fetchMenteeDataFromId,
   addStripeIdToMentee,
+  // fetchMenteeDetailsFromArray,
 };

@@ -1,7 +1,7 @@
 const {
   approveEnrollementStatus,
   addSubscriptionId,
-} = require("../../utilities/enrollmentModelUtilities");
+} = require("../../utilities/enrollmentUtilities");
 
 const { fetchSubsctiptionId } = require("../../utilities/paymentUtilities");
 //Approve Enrollment Field in Enrollment Document
