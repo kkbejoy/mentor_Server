@@ -49,6 +49,10 @@ const menteeSchema = new Schema({
   stripeId: {
     type: String,
   },
+  profilePicUrl: {
+    type: String,
+  },
+
   // refreshTokens: {
   //   type: Array,
   //   default: [],

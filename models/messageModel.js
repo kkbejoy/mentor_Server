@@ -16,7 +16,7 @@ const messageSchema = new Schema(
       senderId: {
         type: Types.ObjectId,
         required: true,
-        refPath: "senderType",
+        refPath: "sender.senderType",
       },
     },
     content: {
