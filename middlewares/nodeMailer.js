@@ -23,7 +23,7 @@ const sentMail = async (toEmail, subject, text) => {
       // html: "<b>Mentor</b>",
     });
 
-    console.log("Message sent: %s", info.messageId, toEmail);
+    console.log("Message sent:", info.messageId, toEmail);
     return;
   } catch (error) {
     console.log(error);

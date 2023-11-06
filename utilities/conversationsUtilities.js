@@ -1,5 +1,21 @@
 const conversationsModel = require("../models/conversationsModel");
 
+//Search Existing  conversation between a Mentor Id and Mentee Id
+const searchConversations = async (mentorId, menteeId) => {
+  try {
+    const convesation = await conversationsModel.findOne({
+      participants: {
+        $elemMatch: {
+          mentor: mentorId,
+          mentee: menteeId,
+        },
+      },
+    });
+    return convesation;
+  } catch (error) {
+    throw error;
+  }
+};
 //Creating a new Conversation // SOme issues
 const createConversationBetweenMentorAndMentee = async (mentorId, menteeId) => {
   try {
@@ -22,9 +38,11 @@ const fetchMenteeConversations = async (menteeId) => {
         participants: { $elemMatch: { mentee: menteeId } },
       })
       .populate({
-        path: "participants.mentor",
-        select: "firstName lastName profileImageUrl",
-      });
+        path: "participants.mentor latestMessage",
+        select:
+          "firstName lastName profileImageUrl content createdAt updatedAt",
+      })
+      .sort({ updatedAt: -1 });
     return response;
   } catch (error) {
     throw error;
@@ -39,15 +57,57 @@ const fetchMentorConversations = async (mentorId) => {
       .find({
         participants: { $elemMatch: { mentor: mentorId } },
       })
-      .populate({ path: "participants.mentee", select: "firstName lastName " });
+      .populate({
+        path: "participants.mentee latestMessage",
+        select:
+          "firstName lastName content createdAt profileImageUrl updatedAt latestMessage.updatedAt",
+      })
+      .sort({ updatedAt: -1 });
+    console.log("Response", response);
     return response;
   } catch (error) {
     throw error;
   }
 };
 
+//Add lastest message to the conversation;
+
+const addlatestMessageToConversation = async (message, conversationId) => {
+  try {
+    const responseFromDB = await conversationsModel.findByIdAndUpdate(
+      { _id: conversationId },
+      {
+        latestMessage: message,
+      }
+    );
+    return responseFromDB;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+//Mark a conversation as Read
+
+const markAConversationAsRead = async (conversationId) => {
+  try {
+    const responseFromDb = await conversationsModel.findByIdAndUpdate(
+      conversationId,
+      {
+        isRead: true,
+      }
+    );
+    return responseFromDb;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 module.exports = {
+  searchConversations,
   createConversationBetweenMentorAndMentee,
   fetchMenteeConversations,
   fetchMentorConversations,
+  addlatestMessageToConversation,
+  markAConversationAsRead,
 };

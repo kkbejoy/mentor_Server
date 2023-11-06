@@ -49,7 +49,7 @@ const menteeSchema = new Schema({
   stripeId: {
     type: String,
   },
-  profilePicUrl: {
+  profileImageUrl: {
     type: String,
   },
 

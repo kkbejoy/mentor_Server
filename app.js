@@ -55,31 +55,3 @@ const server = app.listen(process.env.PORT, () => {
 
 //Socket IO Configuration
 socketModule(server);
-
-// module.exports = server;
-// const io = require("socket.io")(server, {
-//   pingTimeout: 6000,
-//   cors: {
-//     origin: process.env.CLIENT_url,
-//   },
-// });
-
-// io.on("connection", (socket) => {
-//   console.log("connected to socket.io");
-
-//   socket.on("setup", (userId) => {
-//     socket.join(userId);
-//     console.log("Socket User", userId);
-
-//     socket.emit("connected");
-//   });
-
-//   socket.on("chat room", (roomId) => {
-//     socket.join(roomId);
-//     console.log("Chat room creted" + roomId);
-//   });
-//   socket.on("new message", (newMessage) => {
-//     console.log("new Message", newMessage);
-//     socket.to(roomId).emit("messageReveived", newMessage);
-//   });
-// });

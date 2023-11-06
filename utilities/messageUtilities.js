@@ -19,10 +19,13 @@ const createNewMessage = async (
       },
     };
     const responseFromDb = await messageModel.create(messageObject);
+    // console.log("Unpopu/sl;ated response", responseFromDb);
     const populatedResponse = await responseFromDb.populate({
-      path: "sender.senderId",
-      select: "irstName lastName isActive isBlocked",
+      path: "sender.senderId conversation",
+      select:
+        "firstName lastName isActive isBlocked participants.mentor participants.mentee ",
     });
+    // .populate("conversation");
     return populatedResponse;
   } catch (error) {
     throw error;
@@ -32,6 +35,7 @@ const createNewMessage = async (
 //Fetch all messages inside a conversation
 const getAllMessagesInAConversation = async (conversationId) => {
   try {
+    if (!conversationId) throw new Error("Empty conversation id");
     const allMessages = await messageModel
       .find(
         {

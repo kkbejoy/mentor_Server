@@ -3,6 +3,8 @@ const {
   searchConversations,
   fetchMenteeConversations,
   fetchMentorConversations,
+  addlatestMessageToConversation,
+  markAConversationAsRead,
 } = require("../../utilities/conversationsUtilities");
 const {
   createNewMessage,
@@ -25,15 +27,28 @@ const getChatBetweenMentorAndMentee = async (req, res) => {
       const responseFromCreation =
         await createConversationBetweenMentorAndMentee(mentorId, menteeId);
       console.log("response form already", responseFromCreation);
-      res.status(201).json({ status: true, messages: responseFromCreation });
+      return res
+        .status(201)
+        .json({ status: true, conversations: responseFromCreation });
     }
-    res.status(200).json({ status: true, messages: existingCoversation });
+    res.status(200).json({ status: true, conversations: existingCoversation });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ status: false, error });
   }
 };
 
-//This also will become useless
+//Mark a  conversation as read
+
+const markConversationAsRead = async (req, res) => {
+  try {
+    const { conversationId } = req.body;
+    const responseFromDb = await markAConversationAsRead(conversationId);
+    return responseFromDb;
+  } catch (error) {
+    res.status(500).json({ status: false, error });
+  }
+};
 //Get all conversations for a mentee
 
 const getAllConversationsForAMentee = async (req, res) => {
@@ -52,11 +67,11 @@ const getAllConversationsForAMentor = async (req, res) => {
   try {
     const { mentorId } = req.body;
     const mentorConversations = await fetchMentorConversations(mentorId);
-    // console.log(
-    //   "All conversations for a mentor",
-    //   mentorConversations,
-    //   mentorId
-    // );
+    console.log(
+      "All conversations for a mentor",
+      mentorConversations,
+      mentorId
+    );
     res.status(200).json({ status: true, conversations: mentorConversations });
   } catch (error) {
     console.group(error);
@@ -71,14 +86,20 @@ const pushNewMessageFromMentee = async (req, res) => {
     const { message, sender } = req.body;
 
     const senderType = "mentee";
-    console.log(conversationId, message, senderType, sender);
+    // console.log(conversationId, message, senderType, sender);
     const responseFromMessageCreation = await createNewMessage(
       conversationId,
       message,
       senderType,
       sender
     );
-    console.log("New message cretion response", responseFromMessageCreation);
+
+    const responseFromLatestMessagrUpdation =
+      await addlatestMessageToConversation(
+        responseFromMessageCreation._id,
+        conversationId
+      );
+    // console.log("New message cretion response", responseFromMessageCreation);
     res.status(201).json({ status: true, responseFromMessageCreation });
   } catch (error) {
     console.log(error);
@@ -93,14 +114,22 @@ const pushNewMessageFromMentor = async (req, res) => {
     const { conversationId } = req.params;
     const { message, sender } = req.body;
     const senderType = "mentor";
-    console.log(conversationId, message, senderType, sender);
+    // console.log(conversationId, message, senderType, sender);
     const responseFromMessageCreation = await createNewMessage(
       conversationId,
       message,
       senderType,
       sender
     );
-    console.log("New message cretion response", responseFromMessageCreation);
+    const responseFromLatestMessagrUpdation =
+      await addlatestMessageToConversation(
+        responseFromMessageCreation._id,
+        conversationId
+      );
+    // console.log(
+    //   "New message cretion response",
+    //   responseFromLatestMessagrUpdation
+    // );
     res.status(201).json({ status: true, responseFromMessageCreation });
   } catch (error) {
     console.log(error);
@@ -111,6 +140,7 @@ const pushNewMessageFromMentor = async (req, res) => {
 const getAllMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
+    if (!conversationId) throw new Error("No conversationId");
     const messages = await getAllMessagesInAConversation(conversationId);
     // console.log("Messages in conversation", messages);
     res.status(200).json({ status: true, messages });
@@ -121,6 +151,7 @@ const getAllMessages = async (req, res) => {
 };
 module.exports = {
   getChatBetweenMentorAndMentee,
+  markConversationAsRead,
   getAllConversationsForAMentee,
   getAllConversationsForAMentor,
   pushNewMessageFromMentee,

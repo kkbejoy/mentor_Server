@@ -7,6 +7,7 @@ const {
 } = require("../../middlewares/jwtGen");
 const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
 const { createSubscriptionPlan } = require("../../utilities/paymentUtilities");
+const { sentMail } = require("../../middlewares/nodeMailer");
 //New Mentor Registration
 const createMentor = async (req, res) => {
   try {
@@ -15,23 +16,24 @@ const createMentor = async (req, res) => {
     const existingUser = await mentorSchema.findOne({ email: email });
     console.log(existingUser);
     if (existingUser?.isApproved == false) {
+      console.log("Not approved");
       return res.status(403).json({
         status: false,
         error:
           "Your Previous application is Pending review. Your Application is undergoing scrutiny. Please wait",
       });
-    }
+    } else if (existingUser?.isBlocked) {
+      console.log("Blocked");
 
-    if (existingUser?.isBlocked) {
       return res.status(403).json({
         status: false,
         error:
           "Account blocked, Please contact the support team for resolution",
         blocked: true,
       });
-    }
+    } else if (existingUser) {
+      console.log("Bla Bla Blaaaa");
 
-    if (existingUser) {
       return res.status(409).json({
         status: false,
         error: "Mentor with this email id already exists",
@@ -54,6 +56,8 @@ const createMentor = async (req, res) => {
     const newMentor = new mentorSchema(newMentorDetails);
     await newMentor.save();
 
+    const text = `Good Morning ${newMentor.firstName}... We have received your request for mentorship. The certificates will be reviwed by the us and will get back to you soon...!`;
+    await sentMail(newMentor.email, "Account Created", text);
     return res.status(201).json({
       status: true,
       message: `New user with username ${newMentor.firstName} created `,

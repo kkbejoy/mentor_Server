@@ -78,6 +78,17 @@ const addStripeIdToMentee = async (menteeId, stripeId) => {
   }
 };
 
+const updateMenteeDetails = async (menteeId, profileImageUrl) => {
+  try {
+    const responseFromDb = await menteeSchema.findByIdAndUpdate(menteeId, {
+      profileImageUrl: profileImageUrl,
+    });
+    return responseFromDb;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // fetch Mentee Details form array of Mentee Ids
 // const fetchMenteeDetailsFromArray = async (menteesArray) => {
 //   try {
@@ -102,5 +113,6 @@ module.exports = {
   fetchMenteeDataFromEmail,
   fetchMenteeDataFromId,
   addStripeIdToMentee,
+  updateMenteeDetails,
   // fetchMenteeDetailsFromArray,
 };

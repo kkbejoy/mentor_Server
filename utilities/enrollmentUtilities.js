@@ -139,6 +139,22 @@ const enrollmentsWithMenteeDetails = async (mentorId) => {
   }
 };
 
+//Enrollment active or not checker
+
+const isEnrollmentActive = async (mentorId, menteeId) => {
+  try {
+    const enrollmentDetails = await enrollmentSchema.findOne({
+      menteeId: menteeId,
+      mentorId: mentorId,
+    });
+
+    if (!enrollmentDetails) return null;
+    if (enrollmentDetails.isEnrollmentActive) return true;
+    return false;
+  } catch (error) {
+    throw error;
+  }
+};
 //Shceduler which makes changes to the database everyday
 
 module.exports = {
@@ -149,4 +165,5 @@ module.exports = {
   fetchAllMentorsWithTheirDetails,
   fetchArrayOfMentorsForAMentee,
   enrollmentsWithMenteeDetails,
+  isEnrollmentActive,
 };

@@ -6,14 +6,19 @@ const {
   fetchSlotDetailsWithId,
   deleteSlotWithId,
 } = require("../../utilities/slotAppointmentUtilities");
-
+const { addNewNotification } = require("../../utilities/notificationUtilities");
+const { sentMail } = require("../../middlewares/nodeMailer");
 //Add new availbale time slots by the Mentor
 const createNewAvailbleSlotForMentor = async (req, res) => {
   try {
     const { slotDetails, mentorId } = req.body;
 
     slotDetails.mentorId = mentorId;
-    console.log("New Slot Details", slotDetails);
+    const currentTime = new Date();
+    const slotTime = new Date(slotDetails.start);
+    const isPossible = slotTime > currentTime;
+    if (!isPossible) throw new Error("Date elapsed");
+    console.log("New Slot Details", slotDetails, isPossible);
     const response = await createMentorAvailableSlot(slotDetails);
     return res.status(200).json({ status: true, message: "New Slot created" });
   } catch (error) {
@@ -32,7 +37,7 @@ const getAllSlotForMentorId = async (req, res) => {
     console.log("Mentor id", mentorId);
 
     const allTimeSlots = await getAllTimeSlotsForMentor(mentorId);
-    console.log("Allotted Slots", allTimeSlots);
+    // console.log("Allotted Slots", allTimeSlots);
     if (!allTimeSlots) {
       return res
         .status(204)
@@ -54,7 +59,7 @@ const fetchSlotDetails = async (req, res) => {
     const { slotId } = req.params;
     console.log("Slot id", slotId);
     const resonseFromDb = await fetchSlotDetailsWithId(slotId);
-    console.log("Slot from Id controller:", resonseFromDb);
+    // console.log("Slot from Id controller:", resonseFromDb);
     res.status(200).json({ resonseFromDb });
   } catch (error) {
     console.log(error);
@@ -68,9 +73,29 @@ const fetchSlotDetails = async (req, res) => {
 const deleteSlot = async (req, res) => {
   try {
     const { slotId } = req.params;
+    const slotDetails = await fetchSlotDetailsWithId(slotId);
+    let responseFromDb = await deleteSlotWithId(slotId);
+    console.log("Slot delete reso", slotId);
 
-    const responseFromDb = await deleteSlotWithId(slotId);
-    console.log("Slot delete reso", responseFromDb);
+    if (slotDetails.menteeId._id !== null) {
+      console.log("Entered into notifications");
+      const type = "alert";
+      const content = `One of the live sessions agreed has been postponed by the ${slotDetails.mentorId.firstName} ${slotDetails.mentorId.lastName}. Please check your scheduler for more info `;
+      const notifyMentee = await addNewNotification(
+        slotDetails.menteeId._id,
+        "mentee",
+        content,
+        type
+      );
+      const subject = "Live Session Postponed";
+      const text =
+        "Your request for a live session has been cancelled due to unforeseen circumstances on the mentor's end. We appreciate your understanding and will work to find a suitable alternative time for the session. Thank you for your patience.";
+      await sentMail(slotDetails.menteeId.email, subject, text);
+      // console.log("Notification db", notifyMentee);
+    }
+    responseFromDb.deleted = true;
+
+    return res.status(200).json({ status: true, responseFromDb });
   } catch (error) {
     console.log(error);
     return res

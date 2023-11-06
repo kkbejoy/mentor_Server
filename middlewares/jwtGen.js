@@ -52,7 +52,9 @@ const geneateJwtForEmailVerification = async (user) => {
       expiresIn: expiry,
     });
     return jwtToken;
-  } catch (error) {}
+  } catch (error) {
+    throw error;
+  }
 };
 
 module.exports = {

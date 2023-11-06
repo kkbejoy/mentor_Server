@@ -22,12 +22,15 @@ const {
   createCheckoutSession,
   createStripeCustomer,
 } = require("../../utilities/paymentUtilities");
-const { createEntollment } = require("../../utilities/enrollmentUtilities");
+const {
+  createEntollment,
+  isEnrollmentActive,
+} = require("../../utilities/enrollmentUtilities");
 
 //Creating New Mentees
 const createMentee = async (req, res) => {
   try {
-    const { email, password, firstname } = req.body;
+    const { email, password, firstName } = req.body;
     const newMenteeDetails = req.body;
     const existingUser = await menteeSchema.findOne({ email: email });
 
@@ -55,8 +58,9 @@ const createMentee = async (req, res) => {
     await newMentee.save();
     console.log(newMentee);
     // const newEmail = "kkbejoy@ymail.com";
-    const jwt = await geneateJwtForEmailVerification({ firstname, email });
-    const message = ` Good morning ${firstname}. Your account has been successfully created. Please go to this link to verify your account. ${process.env.CLIENT_url}/api/mentees/verify/${jwt}`;
+    const jwt = await geneateJwtForEmailVerification({ firstName, email });
+    console.log("Jwt", jwt);
+    const message = ` Good morning ${firstName}. Your account has been successfully created. Please go to this link to verify your account. ${process.env.CLIENT_url}/api/mentees/verify/${jwt}`;
     await sentMail(email, "Verfication", message); //Sending Acknowlkegment with Link for verification mail to the user
 
     return res.status(201).json({
@@ -287,6 +291,16 @@ const stripeCheckoutSession = async (req, res) => {
       mentorId,
       email
     );
+
+    const isAlreadyEnrolled = await isEnrollmentActive(mentorId, menteeId);
+    if (isAlreadyEnrolled) {
+      console.log("Already Enrolled", isAlreadyEnrolled);
+      return res.status(409).json({
+        status: false,
+        message: "Subscription Active",
+        isAlreadyEnrolled,
+      });
+    }
     const checkoutResponse = await createCheckoutSession(
       mentorPriceId,
       stripeId,

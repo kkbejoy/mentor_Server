@@ -6,8 +6,18 @@ const {
 const {
   fetchTimeSlotsFromMentorArray,
   bookMentorTimeSlot,
+  slotExistence,
+  slotAvailabilityStatus,
+  slotTimeElapsedOrNot,
+  getAllBookedSlotsByThisMentee,
+  revokeABookingByThisMentee,
 } = require("../../utilities/slotAppointmentUtilities");
 
+const {
+  getAllNotificationForAUser,
+} = require("../../utilities/notificationUtilities");
+
+const { updateMenteeDetails } = require("../../utilities/mentees");
 //List of all mentors subscribed by a mentee
 const fetchListOfMentorsSubscribed = async (req, res) => {
   try {
@@ -35,7 +45,7 @@ const mentorsTimeSlotAvailabilityList = async (req, res) => {
     const timeSlots = await fetchTimeSlotsFromMentorArray(
       mentorListArrayForMentee
     );
-    console.log("Time slots", timeSlots);
+    // console.log("Time slots", timeSlots);
     return res.status(200).json({ status: true, timeSlots });
   } catch (error) {
     // console.log(error);
@@ -52,11 +62,16 @@ const fixMentorTimeSlot = async (req, res) => {
     const { slotId: id } = slotId;
     const { menteeQueryTitle, menteeQueryDescription, menteeId } = values;
     console.log("input values from mentee", values);
+    const slotStatus = await slotAvailabilityStatus(slotId);
+    const isPossible = await slotTimeElapsedOrNot(slotId);
+    console.log("date elspased ot not", isPossible);
+    if (slotStatus !== "available") throw new Error("Slot not availalble");
+    if (isPossible) throw new Error("Date Elapsed");
 
+    // Booking Object
     menteeBookingDetails.menteeQueryTitle = menteeQueryTitle;
     menteeBookingDetails.menteeQueryDescription = menteeQueryDescription;
     menteeBookingDetails.menteeId = menteeId;
-
     menteeBookingDetails.menteeId = menteeId;
     menteeBookingDetails.type = "booked";
 
@@ -71,8 +86,73 @@ const fixMentorTimeSlot = async (req, res) => {
     return res.status(400).json({ error: "Operation failed" });
   }
 };
+
+//Get all Notifications for a metntor
+
+const getAllNotifications = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const notifications = await getAllNotificationForAUser(menteeId);
+    // console.log("Notifications", notifications);
+    res.status(200).json({ status: true, notifications });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
+
+//Update Mentees Profile
+
+const updateProfile = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const { profileImageUrl } = req.body;
+    console.log("Updated Fields", menteeId, profileImageUrl);
+    const responseFromUpdate = await updateMenteeDetails(
+      menteeId,
+      profileImageUrl
+    );
+    console.log("responseFromUpdateDB", responseFromUpdate);
+    res.status(200).json({ status: true, responseFromUpdate });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({ status: false });
+  }
+};
+
+//Fetch Booked TIme slots By a Mentee
+
+const fetchBookedTimeSlots = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const responseFromDb = await getAllBookedSlotsByThisMentee(menteeId);
+    console.log("List of Booke slots By mentee:", responseFromDb);
+    res.status(200).json({ status: true, responseFromDb });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
+
+const revokeABooking = async (req, res) => {
+  try {
+    const { slotId } = req.body;
+    console.log(slotId);
+    const responseFromDb = await revokeABookingByThisMentee(slotId);
+    if (!responseFromDb) throw new Error("Slot does not exist");
+    res.status(200).json({ status: true, responseFromDb });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
 module.exports = {
   fetchListOfMentorsSubscribed,
   mentorsTimeSlotAvailabilityList,
   fixMentorTimeSlot,
+  getAllNotifications,
+  updateProfile,
+  fetchBookedTimeSlots,
+  revokeABooking,
 };

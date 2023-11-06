@@ -96,10 +96,23 @@ const bookMentorTimeSlot = async (slotId, menteeDetails) => {
       slotId,
       menteeDetails
     );
+    if (!response) throw new Error("Slot not available");
     console.log("Response from Slot booking", response);
     return response;
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+};
+
+//Verify a slot exists or not
+
+const slotExistence = async (slotId) => {
+  try {
+    const responseFromDb = await slotAppointmentModel.findById(slotId);
+    return responseFromDb;
+  } catch (error) {
+    console.log(errro);
     throw error;
   }
 };
@@ -112,13 +125,13 @@ const fetchSlotDetailsWithId = async (slotId) => {
       .findById(slotId)
       .populate([
         {
-          path: "menteeId",
-          select: ["firstName", "lastName"],
+          path: "menteeId mentorId",
+          select: ["firstName", "lastName", "email"],
         },
       ])
       .lean();
 
-    // console.log("Slot details from id", slotDetails);
+    console.log("Slot details from id", slotDetails);
     return slotDetails;
   } catch (error) {
     throw error;
@@ -133,10 +146,66 @@ const deleteSlotWithId = async (slotId) => {
       _id: slotId,
     });
     console.log(deleteResponse);
-    return true;
+    return deleteResponse;
   } catch (error) {
     console.log(error);
     return error;
+  }
+};
+
+//Returns the slot availbakity status
+const slotAvailabilityStatus = async (slotId) => {
+  try {
+    const slotDetails = await slotAppointmentModel.findById(slotId);
+    return slotDetails?.type;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//Checks the slot slot time have elapsed or not.
+
+const slotTimeElapsedOrNot = async (slotId) => {
+  try {
+    const slotDetails = await slotAppointmentModel.findById(slotId);
+    const currentTime = new Date();
+    return currentTime > slotDetails.start;
+  } catch (error) {
+    throw error;
+  }
+};
+
+//GEt all Booked time slots By this Mentee
+
+const getAllBookedSlotsByThisMentee = async (menteeId) => {
+  try {
+    const responseFromDb = await slotAppointmentModel
+      .find({
+        menteeId: menteeId,
+        type: "booked",
+      })
+      .populate({
+        path: "mentorId",
+        select: "firstName lastName",
+      })
+      .sort({ start: 1 });
+    return responseFromDb;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const revokeABookingByThisMentee = async (slotId) => {
+  try {
+    const responseFromDb = await slotAppointmentModel.findByIdAndUpdate(
+      slotId,
+      {
+        type: "available",
+      }
+    );
+    return responseFromDb;
+  } catch (error) {
+    throw error;
   }
 };
 module.exports = {
@@ -150,4 +219,9 @@ module.exports = {
   bookMentorTimeSlot,
   fetchSlotDetailsWithId,
   deleteSlotWithId,
+  slotExistence,
+  slotAvailabilityStatus,
+  slotTimeElapsedOrNot,
+  getAllBookedSlotsByThisMentee,
+  revokeABookingByThisMentee,
 };

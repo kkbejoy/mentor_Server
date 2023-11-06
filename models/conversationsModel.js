@@ -15,6 +15,10 @@ const conversationsSchema = new Schema(
       },
     ],
     latestMessage: { type: Types.ObjectId, ref: "message" },
+    isRead: {
+      type: Boolean,
+      default: false,
+    },
     isSubscriptionActive: {
       type: Boolean,
       default: true,
@@ -22,5 +26,7 @@ const conversationsSchema = new Schema(
   },
   { timestamps: true }
 );
+
+//Correct the spelling of Conversations
 
 module.exports = mongoose.model("converstation", conversationsSchema);

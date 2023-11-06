@@ -21,6 +21,10 @@ const {
   fetchListOfMentorsSubscribed,
   mentorsTimeSlotAvailabilityList,
   fixMentorTimeSlot,
+  getAllNotifications,
+  updateProfile,
+  fetchBookedTimeSlots,
+  revokeABooking,
 } = require("../controllers/mentees/menteeAutherisedControllers");
 const {
   fetchMentorsSearchResult,
@@ -64,10 +68,17 @@ router.get("/google_auth_mentee", passportGoogleAuth);
 router.get("/googlecallback", passportGoogleAuthCallback, googleAuthSuccess);
 
 //Search For Mentors
-router.get("/mentors/:search", fetchMentorsSearchResult);
+router.get("/mentors", fetchMentorsSearchResult);
 
 //Mentor Profile Data
-router.get("/mentor/profile/:id", fetchMentorProfileDetails);
+router.get(
+  "/mentor/profile/:id",
+  // menteeAuthMiddleware,
+  fetchMentorProfileDetails
+);
+
+//Edit Mentee Profile
+router.route("/edit-profile/:menteeId").patch(updateProfile);
 
 //Stripe Checkout
 router.post("/create-checkout", menteeAuthMiddleware, stripeCheckoutSession);
@@ -85,15 +96,21 @@ router.get(
   menteeAuthMiddleware,
   fetchListOfMentorsSubscribed
 );
-
+//Notifications
+router.route("/notifications/:menteeId").get(getAllNotifications);
 // Fetching Details of timeSlots for Mentees //Book Mentor from available Time slots  By Mentee
-
 router
   .route("/timeslots/:menteeId")
   .get(menteeAuthMiddleware, mentorsTimeSlotAvailabilityList)
   .post(menteeAuthMiddleware, fixMentorTimeSlot);
 
-// router.post("/fix-slot", fixMentorTimeSlot);
+//Fetch Booked time slots By a Mentee
+
+router
+  .route("/booked-slots/:menteeId")
+  .get(fetchBookedTimeSlots)
+  .patch(revokeABooking);
+
 //Trail route
 router.route("/trail").get(trail);
 module.exports = router;

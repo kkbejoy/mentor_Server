@@ -55,21 +55,54 @@ const modifyIsBlockedField = async (mentorId) => {
 };
 
 //Search mentor With Search input
-const getMentorsFromSearchInput = async (searchInput) => {
+const getMentorsFromSearchInput = async (searchInput, feesCode, rating) => {
   try {
+    let feeinput = {};
+
     const searchInput1 = searchInput.trim();
     console.log("Search Input", searchInput1);
+    if (feesCode === "a") {
+      feeinput = { $exists: true };
+    } else if (feesCode === "b") {
+      feeinput = { $lte: 1000 };
+    } else if (feesCode === "c") {
+      feeinput = { $gt: 999, $lte: 2500 };
+    } else if (feesCode === "d") {
+      feeinput = { $gte: 2500, $lte: 5000 };
+    } else {
+      feeinput = { $gte: 5000 };
+    }
 
     let query = {};
     if (searchInput != null || searchInput.trim() !== "null") {
       query = {
-        firstName: { $regex: new RegExp(searchInput, "i") },
-        isApproved: true,
+        $and: [
+          {
+            $or: [
+              { firstName: { $regex: new RegExp(searchInput, "i") } },
+              { lastName: { $regex: new RegExp(searchInput, "i") } },
+              { firmName: { $regex: new RegExp(searchInput, "i") } },
+              {
+                expertise: {
+                  $elemMatch: { $regex: new RegExp(searchInput, "i") },
+                },
+              },
+            ],
+          },
+          { hourlyRate: feeinput },
+          { isApproved: true, isBlocked: false },
+        ],
       };
       // That i is to make the expression case insensitive
     }
-    console.log(query);
-    const mentors = await mentorSchema.find(query);
+    // console.log("Query", query);
+    const mentors = await mentorSchema.find(query, {
+      password: 0,
+      createdAt: 0,
+      subscriptionTypes: 0,
+      isApproved: 0,
+      isBlocked: 0,
+    });
 
     return mentors;
   } catch (error) {
@@ -82,7 +115,7 @@ const getMentorData = async (mentorId) => {
   try {
     console.log(mentorId);
     const mentorData = await mentorSchema.findById(mentorId, { password: 0 });
-    console.log(mentorData);
+    // console.log(mentorData);
     return mentorData;
   } catch (error) {
     throw error;
