@@ -21,7 +21,14 @@ const {
 
 const {
   updateProfile,
+  fetchMentorProfileData,
   fetchSubscribedMentees,
+  fetchTodaysLiveSession,
+  fetchEnrollmentDetailsForParticularMentor,
+  addNewSkillForMentor,
+  deleteMentorSkill,
+  raiseATicketFromMentorSide,
+  getTheListOfTicketsRaisedByAMentor,
 } = require("../controllers/mentors/mentorGeneralControllers");
 
 //Mentor Registration
@@ -31,7 +38,16 @@ router.route("/login").post(mentorLoginRules, mentorLogin);
 
 //Edit Mentor Profile
 
-router.route("/edit-profile/:mentorId").patch(updateProfile);
+router
+  .route("/edit-profile/:mentorId")
+  .patch(updateProfile)
+  .get(fetchMentorProfileData);
+
+// Add New Skills and REmove a Skill
+router
+  .route("/add-new-skill/:mentorId")
+  .patch(addNewSkillForMentor)
+  .post(deleteMentorSkill);
 //Mentor JWT Access Token regeneration
 router.post("/regenerate_access_token", getNewAccessToken);
 
@@ -50,3 +66,18 @@ router.route("/slot-details/:slotId").get(fetchSlotDetails).delete(deleteSlot);
 
 //Fetcth Subscibed Mentor Profiles
 router.get("/subscribed-mentees/:mentorId", fetchSubscribedMentees);
+
+//Fetch todays booking sessions
+
+router.route("/todays-live-slots/:mentorId").get(fetchTodaysLiveSession);
+
+router.get(
+  "/daily-enrollment-object/:mentorId",
+  fetchEnrollmentDetailsForParticularMentor
+);
+
+//Raise  a Ticket
+router
+  .route("/raise-ticket/:mentorId")
+  .post(raiseATicketFromMentorSide)
+  .get(getTheListOfTicketsRaisedByAMentor);

@@ -9,6 +9,7 @@ const {
 const {
   allMenteesWithDetails,
   modifyMenteeIsBlockedField,
+  getDetailsOfNewMenteeregistration,
 } = require("../../utilities/mentees");
 const {
   allMentorsWithDetails,
@@ -22,7 +23,20 @@ const {
   createSubscribableProduct,
 } = require("../../utilities/paymentUtilities");
 const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
-
+const {
+  getAllTickets,
+  changeTicketStatusChange,
+  ticketDetailsWithTicketId,
+} = require("../../utilities/ticketUtilities");
+const {
+  getDailyNewEnrollments,
+} = require("../../utilities/enrollmentUtilities");
+const {
+  textToAccused,
+  textToComplainant,
+  subjectToAccusedMailText,
+  subjectToComplainant,
+} = require("../../constants/emailConstants");
 // Moderator LogIn Function
 const moderatorLogin = async (req, res) => {
   try {
@@ -227,6 +241,110 @@ const moderatorLogout = async (req, res) => {
   }
 };
 
+//Fetch all tickets raised by Mentee and Mentor
+
+const fetchAllTickets = async (req, res) => {
+  try {
+    const responseFromDb = await getAllTickets();
+    console.log("All tickers froim Moderateor soide", responseFromDb.length);
+    return res.status(200).json({ status: true, responseFromDb });
+  } catch (error) {
+    return res.status(400).json({ error: "Operation failed. Please Retry" });
+  }
+};
+
+//Take action against mentee or mentor after verifying the ticket
+const takeActionAgainstAccused = async (req, res) => {
+  try {
+    const { ticketId } = req.body;
+    console.log("Tikcet object", ticketId);
+    const ticketDetails = await ticketDetailsWithTicketId(ticketId);
+    //Destructuring The ticket Object
+    const {
+      complainant: {
+        complainantType,
+        complainantId: { _id: complainantId, email: complainantEmail },
+      },
+      accused: {
+        accusedType,
+        accusedId: { _id: accusedId, email: accusedEmail },
+      },
+    } = ticketDetails;
+    console.log(
+      "Ticket Details",
+      accusedEmail,
+      accusedId,
+
+      complainantEmail,
+      complainantId,
+      complainantType,
+      accusedType
+    );
+    //Process that have to happen for this Operation
+    const blockTheAccused =
+      accusedType === "mentee"
+        ? modifyMenteeIsBlockedField(accusedId)
+        : modifyIsBlockedField(accusedId);
+    const resposeFromStatusChange = changeTicketStatusChange(ticketId);
+    const mailToAccused = sentMail(
+      accusedEmail,
+      subjectToAccusedMailText,
+      textToAccused
+    );
+    const mailToComplainant = sentMail(
+      complainantEmail,
+      subjectToComplainant,
+      textToComplainant
+    );
+
+    Promise.all([
+      blockTheAccused,
+      resposeFromStatusChange,
+      mailToAccused,
+      mailToComplainant,
+    ])
+      .then((result) => {
+        console.log("Result of the all the above promises is", result);
+      })
+      .then((response) => {
+        console.log("Response FRom promise", response);
+        res.status(200).json({ status: true });
+      })
+      .catch((error) => {
+        throw error;
+      });
+    console.log("Res from Tickets Status change", blockTheAccused);
+    // const blockUser=
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "Operation failed. Please Retry" });
+  }
+};
+
+//Get the data of daily Enrollment For Moderator Homepage
+const fetchDailyEnrollmentData = async (req, res) => {
+  try {
+    const dailyEnrollmentData = await getDailyNewEnrollments();
+    console.log("Daily enrollment data", dailyEnrollmentData);
+    res.status(200).json({ status: true, dailyEnrollmentData });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "Operation failed. Please Retry" });
+  }
+};
+
+//fetch the details of Daily new Mentee Details
+
+const fetchDailyNewMenteeData = async (req, res) => {
+  try {
+    const newMenteeDetail = await getDetailsOfNewMenteeregistration();
+    console.log("Details of New Mentees:", newMenteeDetail);
+    res.status(200).json({ status: true, newMenteeDetail });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "Operation failed. Please Retry" });
+  }
+};
 module.exports = {
   moderatorLogin,
   getNewAccessToken,
@@ -237,4 +355,8 @@ module.exports = {
   blockOrUnBlockMentor,
   blockOrUnBlockMentees,
   moderatorLogout,
+  fetchAllTickets,
+  takeActionAgainstAccused,
+  fetchDailyEnrollmentData,
+  fetchDailyNewMenteeData,
 };

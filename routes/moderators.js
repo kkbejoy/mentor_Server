@@ -10,6 +10,10 @@ const {
   blockOrUnBlockMentor,
   blockOrUnBlockMentees,
   moderatorLogout,
+  fetchAllTickets,
+  takeActionAgainstAccused,
+  fetchDailyEnrollmentData,
+  fetchDailyNewMenteeData,
 } = require("../controllers/moderators/moderators");
 const { moderatorLoginRules } = require("../validators/moderator");
 const { modearatorAuthMiddleware } = require("../config/passportJWT");
@@ -59,3 +63,13 @@ router.patch(
   blockOrUnBlockMentees
 );
 module.exports = router;
+
+//Tickets
+
+router.route("/tickets").get(fetchAllTickets).patch(takeActionAgainstAccused);
+
+//Data For Daily Enrollment Graph
+router.get("/daily-enrollments", fetchDailyEnrollmentData);
+
+//Data New mentees details for Home page
+router.get("/daily-new-mentees", fetchDailyNewMenteeData);

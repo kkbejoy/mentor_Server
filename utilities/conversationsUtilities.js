@@ -40,9 +40,9 @@ const fetchMenteeConversations = async (menteeId) => {
       .populate({
         path: "participants.mentor latestMessage",
         select:
-          "firstName lastName profileImageUrl content createdAt updatedAt",
+          "firstName lastName profileImageUrl content createdAt updatedAt latestMessage.updatedAt",
       })
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: 1 });
     return response;
   } catch (error) {
     throw error;
@@ -62,7 +62,7 @@ const fetchMentorConversations = async (mentorId) => {
         select:
           "firstName lastName content createdAt profileImageUrl updatedAt latestMessage.updatedAt",
       })
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: 1 });
     console.log("Response", response);
     return response;
   } catch (error) {

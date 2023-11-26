@@ -15,15 +15,13 @@ const passportGoogleOAuth = new GoogleStrategy(
     scope: ["profile", "email"],
     // authorizationURL: "https://accounts.google.com/o/oauth2/auth",
     // tokenURL: "https://accounts.google.com/o/oauth2/token",
-    // clientID: googleClientId,
-    // clientSecret: googleClientSecret,
-    // callbackURL: callBackurl,
+
     // passReqToCallback: true, // Pass the request object to the callback
   },
   async function (accessToken, refreshToken, profile, cb) {
     //This function will be excecuted only on successfull authentication
     try {
-      console.log("google auth");
+      console.log("google auth", accessToken, profile);
       const emailFromGoogle = profile.emails[0].value;
       console.log(emailFromGoogle);
 

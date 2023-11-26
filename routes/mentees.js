@@ -25,6 +25,9 @@ const {
   updateProfile,
   fetchBookedTimeSlots,
   revokeABooking,
+  fetchMenteeProfileDetails,
+  raiseATicketFromMenteeSide,
+  getTheListOfTicketsRaisedByAMentee,
 } = require("../controllers/mentees/menteeAutherisedControllers");
 const {
   fetchMentorsSearchResult,
@@ -41,6 +44,7 @@ const {
   approveEnrollementFromPaymentSuccess,
 } = require("../controllers/mentees/paymentControllers");
 
+// const { raiseATicket } = require("../utilities/ticketUtilities");
 //Mentee Registration
 router.route("/register").post(menteeRegistrationRules, createMentee);
 
@@ -78,7 +82,10 @@ router.get(
 );
 
 //Edit Mentee Profile
-router.route("/edit-profile/:menteeId").patch(updateProfile);
+router
+  .route("/edit-profile/:menteeId")
+  .get(fetchMenteeProfileDetails)
+  .patch(updateProfile);
 
 //Stripe Checkout
 router.post("/create-checkout", menteeAuthMiddleware, stripeCheckoutSession);
@@ -111,6 +118,11 @@ router
   .get(fetchBookedTimeSlots)
   .patch(revokeABooking);
 
+//Raise  a Ticket
+router
+  .route("/raise-ticket/:menteeId")
+  .post(raiseATicketFromMenteeSide)
+  .get(getTheListOfTicketsRaisedByAMentee);
 //Trail route
 router.route("/trail").get(trail);
 module.exports = router;

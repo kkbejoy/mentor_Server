@@ -179,10 +179,13 @@ const slotTimeElapsedOrNot = async (slotId) => {
 
 const getAllBookedSlotsByThisMentee = async (menteeId) => {
   try {
+    const today = new Date();
+
     const responseFromDb = await slotAppointmentModel
       .find({
         menteeId: menteeId,
         type: "booked",
+        end: { $gte: today },
       })
       .populate({
         path: "mentorId",
@@ -208,6 +211,31 @@ const revokeABookingByThisMentee = async (slotId) => {
     throw error;
   }
 };
+
+const fetchSessionWithDate = async (mentorId, date) => {
+  try {
+    console.log("date, ", mentorId);
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const newId = new ObjectId(mentorId);
+    const sessionDetails = await slotAppointmentModel
+      .find({
+        mentorId: newId,
+        end: { $gte: today, $lte: tomorrow },
+        type: "booked",
+        menteeId: { $exists: true },
+      })
+      .populate({ path: "menteeId", select: "firstName lastName" })
+      .sort({ start: 1 });
+    // console.log("session detils", sessionDetails);
+    return sessionDetails;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   createMentorAvailableSlot,
   updateMentorAvailbaleSlot,
@@ -224,4 +252,5 @@ module.exports = {
   slotTimeElapsedOrNot,
   getAllBookedSlotsByThisMentee,
   revokeABookingByThisMentee,
+  fetchSessionWithDate,
 };

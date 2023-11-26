@@ -11,6 +11,18 @@ const allMenteesWithDetails = async () => {
   }
 };
 
+//Fetch mentee Details with Mentee Id
+
+const fetchMenteeProfileWithId = async (menteeId) => {
+  try {
+    const menteeDetails = await menteeSchema.findById(menteeId, {
+      password: 0,
+    });
+    return menteeDetails;
+  } catch (error) {
+    throw error;
+  }
+};
 //Block Or UnBlock Mentees
 const modifyMenteeIsBlockedField = async (menteeId) => {
   try {
@@ -20,7 +32,7 @@ const modifyMenteeIsBlockedField = async (menteeId) => {
     const update = { $set: { isBlocked: !currentStatus } };
     const response = await menteeSchema.findByIdAndUpdate(menteeId, update);
     if (response == null || undefined) throw new Error("Some Issue");
-    console.log(response);
+    console.log("Block Response mentee side", response);
     return true;
   } catch (error) {
     throw error;
@@ -78,11 +90,12 @@ const addStripeIdToMentee = async (menteeId, stripeId) => {
   }
 };
 
-const updateMenteeDetails = async (menteeId, profileImageUrl) => {
+const updateMenteeDetails = async (menteeId, updatesObject) => {
   try {
-    const responseFromDb = await menteeSchema.findByIdAndUpdate(menteeId, {
-      profileImageUrl: profileImageUrl,
-    });
+    const responseFromDb = await menteeSchema.findByIdAndUpdate(
+      menteeId,
+      updatesObject
+    );
     return responseFromDb;
   } catch (error) {
     throw error;
@@ -106,13 +119,60 @@ const updateMenteeDetails = async (menteeId, profileImageUrl) => {
 //     throw error;
 //   }
 // };
+
+//Details of new Mentee Registration
+
+const getDetailsOfNewMenteeregistration = async () => {
+  try {
+    const menteeDetails = await menteeSchema.aggregate([
+      {
+        $match: {
+          // createdAt:
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          date: {
+            $dateFromParts: {
+              year: "$_id.year",
+              month: "$_id.month",
+              day: "$_id.day",
+            },
+          },
+          count: 1,
+        },
+      },
+      {
+        $sort: {
+          date: 1,
+        },
+      },
+    ]);
+    return menteeDetails;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   allMenteesWithDetails,
+  fetchMenteeProfileWithId,
   modifyMenteeIsBlockedField,
   approveMentees,
   fetchMenteeDataFromEmail,
   fetchMenteeDataFromId,
   addStripeIdToMentee,
   updateMenteeDetails,
-  // fetchMenteeDetailsFromArray,
+  getDetailsOfNewMenteeregistration,
 };

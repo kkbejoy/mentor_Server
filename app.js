@@ -15,16 +15,21 @@ const menteesRoutes = require("./routes/mentees");
 const mentorRoutes = require("./routes/mentors");
 const moderatorRoutes = require("./routes/moderators");
 const chatRoutes = require("./routes/chatRoutes");
+
 app.use(
   cors({
     origin: "*",
+    allowedHeaders: "*",
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: false,
     optionsSuccessStatus: 204,
   })
 );
-
+// app.use((req, res, next) => {
+//   console.log("Response Headers After CORS Middleware:", res.getHeaders());
+//   next();
+// });
 app.engine(
   "hbs",
   hbs.express4({

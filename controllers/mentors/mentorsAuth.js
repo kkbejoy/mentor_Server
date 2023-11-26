@@ -149,7 +149,7 @@ const getNewAccessToken = async (req, res) => {
   try {
     const { refreshToken, mentorId } = req.body;
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY);
-    const refreshTokenExistence = await tok;
+    // const refreshTokenExistence = await tok;
     console.log("decoded JWT", decoded, mentorId);
     const token = await findRefreshToken(refreshToken);
     if (!token) {

@@ -1,4 +1,3 @@
-const { find } = require("../models/mentees");
 const mentorSchema = require("../models/mentors");
 
 //Fetches all mentors with all details
@@ -47,7 +46,7 @@ const modifyIsBlockedField = async (mentorId) => {
     // console.log(currentStatus, newStatus);
     const update = { $set: { isBlocked: !currentStatus } };
     const response = await mentorSchema.findByIdAndUpdate(mentorId, update);
-    console.log(response);
+    console.log("Block Response mentor side", response);
     return true;
   } catch (error) {
     throw error;
@@ -151,6 +150,33 @@ const updateMentorProfileDetails = async (mentorId, updationObject) => {
     throw error;
   }
 };
+
+// Update mentor SKills
+
+const updateMentorSkillsArray = async (mentorId, newSkillArray) => {
+  try {
+    const responseFromDB = await mentorSchema.findByIdAndUpdate(mentorId, {
+      $addToSet: { expertise: { $each: newSkillArray } },
+    });
+    return responseFromDB;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+//Remove a Skill Form Mentor Skill Array
+
+const removeASkillFromMentorSkillArray = async (mentorId, skill) => {
+  try {
+    const responseFromDb = await mentorSchema.findByIdAndUpdate(mentorId, {
+      $pull: { expertise: skill },
+    });
+    console.log("Response From db", responseFromDb);
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   allMentorsWithDetails,
   allMentorRequestsList,
@@ -160,4 +186,6 @@ module.exports = {
   getMentorData,
   updateMentorDocumentWithPriceId,
   updateMentorProfileDetails,
+  updateMentorSkillsArray,
+  removeASkillFromMentorSkillArray,
 };

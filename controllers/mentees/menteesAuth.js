@@ -198,25 +198,28 @@ const getNewAccessToken = async (req, res) => {
 const googleAuthSuccess = async (req, res) => {
   try {
     console.log("Google auth controller function");
-    const { email, _id, firstName } = req.user;
+    const { email, _id: menteeId, firstName: menteeName } = req.user;
+    console.log("mentee name", menteeId, menteeName);
+
     const accessToken = await generateAccessToken({
-      id: _id,
+      id: menteeId,
       email: email,
-      name: firstName,
+      name: menteeName,
     });
     const refreshToken = await generateRefreshToken({
-      id: _id,
+      id: menteeId,
       email: email,
-      name: firstName,
+      name: menteeName,
     });
-
-    res.status(200).json({
-      menteeName: firstName,
-      menteeId: _id,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      message: "Login Successfull",
-    });
+    const redirectURl = `${process.env.CLIENT_url}/${process.env.GOOGLE_AUTH_SUCCESS_REDIRECT_URL}/data?menteeName=${menteeName}&accessToken=${accessToken}&refreshToken=${refreshToken}&menteeId=${menteeId}`;
+    res.redirect(redirectURl);
+    // res.status(200).json({
+    //   menteeName: firstName,
+    //   menteeId: _id,
+    //   accessToken: accessToken,
+    //   refreshToken: refreshToken,
+    //   message: "Login Successfull",
+    // });
     console.log(req.user);
   } catch (error) {
     console.log(error);

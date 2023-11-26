@@ -1,9 +1,10 @@
 const { response } = require("express");
+const moment = require("moment");
 const enrollmentSchema = require("../models/enrollmentModel");
 const { eachQuarterOfInterval } = require("date-fns");
 const mentees = require("../models/mentees");
 const schedule = require("node-schedule");
-
+const mongoose = require("mongoose");
 //Create a new Enrollment
 const createEntollment = async (enrollmentObject) => {
   try {
@@ -157,6 +158,114 @@ const isEnrollmentActive = async (mentorId, menteeId) => {
 };
 //Shceduler which makes changes to the database everyday
 
+// Daily Footfall of new enrollments for  a particular mentor
+
+const getDailyEnrollmentsForAParticularMentor = async (mentorId) => {
+  try {
+    const today = new Date();
+    const dummy = new Date();
+    const oneMonthPrior = dummy.setMonth(dummy.getMonth() - 1);
+    console.log("Months", today, new Date(oneMonthPrior));
+    const result = await enrollmentSchema.aggregate([
+      {
+        $match: {
+          mentorId: new mongoose.Types.ObjectId(mentorId),
+          // createdAt: { $gte: oneMonthPrior, $lte: today },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          // _id: 0,
+          date: {
+            $dateFromParts: {
+              year: "$_id.year",
+              month: "$_id.month",
+              day: "$_id.day",
+            },
+          },
+          count: 1,
+        },
+      },
+      {
+        $sort: {
+          date: 1,
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+//Fetcht the daily New EnrollMents In the app
+const getDailyNewEnrollments = async () => {
+  try {
+    const dailyEnrollment = await enrollmentSchema.aggregate([
+      {
+        $match: {
+          // mentorId: new mongoose.Types.ObjectId(mentorId),
+          // createdAt: { $gte: oneMonthPrior, $lte: today },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          // _id: 0,
+          date: {
+            $dateFromParts: {
+              year: "$_id.year",
+              month: "$_id.month",
+              day: "$_id.day",
+            },
+          },
+          count: 1,
+        },
+      },
+      {
+        $sort: {
+          date: 1,
+        },
+      },
+      {
+        $project: {
+          date: 0,
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+    return dailyEnrollment;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createEntollment,
   approveEnrollementStatus,
@@ -166,4 +275,6 @@ module.exports = {
   fetchArrayOfMentorsForAMentee,
   enrollmentsWithMenteeDetails,
   isEnrollmentActive,
+  getDailyEnrollmentsForAParticularMentor,
+  getDailyNewEnrollments,
 };

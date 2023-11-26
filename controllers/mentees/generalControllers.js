@@ -20,13 +20,12 @@ const fetchMentorsSearchResult = async (req, res) => {
     const rating = req.query.rating;
     const price = req.query.price;
     //Make sure to validate and sanitize these fields
-    // console.log(search, rating, price);
     const mentorsSearchResult = await getMentorsFromSearchInput(
       search,
       price,
       rating
     );
-    // console.log(mentorsSearchResult);
+    console.log(mentorsSearchResult);
     res.status(200).json({ status: true, mentorsSearchResult });
     res.status(200);
   } catch (error) {

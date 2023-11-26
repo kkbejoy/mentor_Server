@@ -17,7 +17,15 @@ const {
   getAllNotificationForAUser,
 } = require("../../utilities/notificationUtilities");
 
-const { updateMenteeDetails } = require("../../utilities/mentees");
+const {
+  updateMenteeDetails,
+  fetchMenteeProfileWithId,
+} = require("../../utilities/mentees");
+
+const {
+  postATicketByMentee,
+  fetchListOfTokenByMentee,
+} = require("../../utilities/ticketUtilities");
 //List of all mentors subscribed by a mentee
 const fetchListOfMentorsSubscribed = async (req, res) => {
   try {
@@ -106,11 +114,11 @@ const getAllNotifications = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { menteeId } = req.params;
-    const { profileImageUrl } = req.body;
-    console.log("Updated Fields", menteeId, profileImageUrl);
+    const updatesObject = req.body;
+    console.log("Updated Fields", menteeId, req.body);
     const responseFromUpdate = await updateMenteeDetails(
       menteeId,
-      profileImageUrl
+      updatesObject
     );
     console.log("responseFromUpdateDB", responseFromUpdate);
     res.status(200).json({ status: true, responseFromUpdate });
@@ -121,6 +129,17 @@ const updateProfile = async (req, res) => {
   }
 };
 
+//Fetch Mentee Profile Details
+const fetchMenteeProfileDetails = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const menteeProfileDetails = await fetchMenteeProfileWithId(menteeId);
+    res.status(200).json({ status: true, menteeProfileDetails });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
 //Fetch Booked TIme slots By a Mentee
 
 const fetchBookedTimeSlots = async (req, res) => {
@@ -147,6 +166,31 @@ const revokeABooking = async (req, res) => {
     res.status(500).json({ status: false });
   }
 };
+
+//Raise  a Ticket
+const raiseATicketFromMenteeSide = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const ticketObject = req.body;
+    const ticketResponse = await postATicketByMentee(menteeId, ticketObject);
+    return res.status(200).json({ status: true, ticketResponse });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
+
+//List of Tickets raised by a mentee
+const getTheListOfTicketsRaisedByAMentee = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const listOfTickets = await fetchListOfTokenByMentee(menteeId);
+    return res.status(200).json({ status: true, listOfTickets });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
 module.exports = {
   fetchListOfMentorsSubscribed,
   mentorsTimeSlotAvailabilityList,
@@ -155,4 +199,7 @@ module.exports = {
   updateProfile,
   fetchBookedTimeSlots,
   revokeABooking,
+  fetchMenteeProfileDetails,
+  raiseATicketFromMenteeSide,
+  getTheListOfTicketsRaisedByAMentee,
 };
