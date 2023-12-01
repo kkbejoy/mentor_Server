@@ -14,6 +14,8 @@ const {
   fetchMenteeDataFromEmail,
   addStripeIdToMentee,
   fetchMenteeDataFromId,
+  fetchMenteeWithEmailI,
+  changeMenteePassword,
 } = require("../../utilities/mentees");
 const { deleteToken, findRefreshToken } = require("../../utilities/tokens");
 const { sentMail } = require("../../middlewares/nodeMailer");
@@ -26,6 +28,7 @@ const {
   createEntollment,
   isEnrollmentActive,
 } = require("../../utilities/enrollmentUtilities");
+const { sentOTP, verifyOTP } = require("../../middlewares/twilio");
 
 //Creating New Mentees
 const createMentee = async (req, res) => {
@@ -323,6 +326,55 @@ const stripeCheckoutSession = async (req, res) => {
     return res.status(400).json({ error: "Operation failed" });
   }
 };
+
+// Function to sent OTP
+const menteeSendOTPForForgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const isMenteeExistsOrNot = await fetchMenteeWithEmailI(email);
+    if (!isMenteeExistsOrNot)
+      return res
+        .status(404)
+        .json({ status: false, message: "Enter a valid Email id" });
+    const phone = isMenteeExistsOrNot?.phone;
+    const sentOTPStatus = await sentOTP(phone);
+    if (!sentOTPStatus && !sentOTPStatus?.valid) {
+      throw new Error("Failed to sent OTP");
+    }
+
+    console.log(email, isMenteeExistsOrNot, sentOTPStatus);
+    return res
+      .status(200)
+      .json({ status: true, message: "OTP has been sent to mobile number" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ status: false, message: "Operation failed" });
+  }
+};
+
+//Funtion to verify the OTP and Change Change Passwor
+
+const changePasswordWithOTP = async (req, res) => {
+  try {
+    const { otp, password, email } = req.body;
+    const isMenteeExistsOrNot = await fetchMenteeWithEmailI(email);
+    const phone = isMenteeExistsOrNot?.phone;
+
+    console.log(otp, password);
+    const otpVerificationStatus = await verifyOTP(otp, phone);
+    if (!otpVerificationStatus) {
+      return res.status(401).json({ status: false, message: "Ente valid OTP" });
+    }
+    console.log("Result of OTP verifications", otpVerificationStatus);
+
+    const responseFromDb = await changeMenteePassword(phone, password);
+    console.log("response from pass", responseFromDb);
+    // return res.status(200).json({ status: true, message: "Password changed" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ status: false, message: "Operation failed" });
+  }
+};
 module.exports = {
   createMentee,
   verifyEmailIdFromJWT,
@@ -333,4 +385,6 @@ module.exports = {
   // getStripePublishableKey,
   // getStripePaymentIntent,
   stripeCheckoutSession,
+  menteeSendOTPForForgotPassword,
+  changePasswordWithOTP,
 };

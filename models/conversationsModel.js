@@ -15,10 +15,10 @@ const conversationsSchema = new Schema(
       },
     ],
     latestMessage: { type: Types.ObjectId, ref: "message" },
-    isRead: {
-      type: Boolean,
-      default: false,
-    },
+    // isRead: {
+    //   type: Boolean,
+    //   default: false,
+    // },
     isSubscriptionActive: {
       type: Boolean,
       default: true,

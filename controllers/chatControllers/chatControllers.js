@@ -43,8 +43,8 @@ const getChatBetweenMentorAndMentee = async (req, res) => {
 const markConversationAsRead = async (req, res) => {
   try {
     const { conversationId } = req.body;
-    const responseFromDb = await markAConversationAsRead(conversationId);
-    return responseFromDb;
+    // const responseFromDb = await markAConversationAsRead(conversationId);
+    // return responseFromDb;
   } catch (error) {
     res.status(500).json({ status: false, error });
   }
@@ -54,8 +54,11 @@ const markConversationAsRead = async (req, res) => {
 const getAllConversationsForAMentee = async (req, res) => {
   try {
     const { menteeId } = req.body;
+    const mentorName = req.query.mentorName;
+    console.log("Mentor Namen:", mentorName);
+
     const menteeConversations = await fetchMenteeConversations(menteeId);
-    // console.log("All conversations for a mentee", menteeConversations);
+    console.log("All conversations for a mentee", menteeConversations);
     res.status(200).json({ status: true, conversations: menteeConversations });
   } catch (error) {
     console.log(error);
@@ -66,6 +69,8 @@ const getAllConversationsForAMentee = async (req, res) => {
 const getAllConversationsForAMentor = async (req, res) => {
   try {
     const { mentorId } = req.body;
+    // const mentorName = req.query.mentorName;
+    // console.log("Mentor Namen:", mentorName, mentorId);
     const mentorConversations = await fetchMentorConversations(mentorId);
     console.log(
       "All conversations for a mentor",

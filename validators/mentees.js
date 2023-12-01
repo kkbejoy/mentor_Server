@@ -1,4 +1,4 @@
-const { body, validationResult } = require("express-validator");
+const { body, validationResult, sanitizeBody } = require("express-validator");
 
 const menteeRegistrationRules = [
   body("firstName").notEmpty().withMessage("First name is required").trim(),
@@ -35,4 +35,35 @@ const menteeLoginRules = [
     next();
   },
 ];
-module.exports = { menteeRegistrationRules, menteeLoginRules };
+
+const checkMenteeOTPandNewPassword = [
+  body("otp")
+    .isNumeric()
+    .isLength({ min: 6, max: 6 })
+    .withMessage("OTP must be a 6-digit number"),
+  body("password")
+    .notEmpty()
+    // .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+  body("confirmPassword").custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error("Passwords do not match");
+    }
+    return true;
+  }),
+  // sanitizeBody("otp").toInt(), // Sanitize OTP to an integer
+  // sanitizeBody(["password", "confirmPassword"]).escape(), // Sanitize passwords
+  (req, res, next) => {
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+      console.log(validationErrors);
+      return res.status(400).json({ errors: "Validation failed" });
+    }
+    next();
+  },
+];
+module.exports = {
+  menteeRegistrationRules,
+  menteeLoginRules,
+  checkMenteeOTPandNewPassword,
+};

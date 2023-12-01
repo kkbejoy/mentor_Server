@@ -4,6 +4,7 @@ const passport = require("passport");
 const {
   menteeRegistrationRules,
   menteeLoginRules,
+  checkMenteeOTPandNewPassword,
 } = require("../validators/mentees");
 const {
   createMentee,
@@ -15,6 +16,8 @@ const {
   getStripePublishableKey,
   getStripePaymentIntent,
   stripeCheckoutSession,
+  menteeSendOTPForForgotPassword,
+  changePasswordWithOTP,
 } = require("../controllers/mentees/menteesAuth");
 
 const {
@@ -44,6 +47,7 @@ const {
   approveEnrollementFromPaymentSuccess,
 } = require("../controllers/mentees/paymentControllers");
 
+const { sentOTP, verifyOTP } = require("../middlewares/twilio");
 // const { raiseATicket } = require("../utilities/ticketUtilities");
 //Mentee Registration
 router.route("/register").post(menteeRegistrationRules, createMentee);
@@ -58,6 +62,12 @@ router
     passport.authenticate("local", { session: false }),
     getMenteeTokens
   );
+
+//Mentee OTP Genereation
+router.post("/sent-otp", menteeSendOTPForForgotPassword);
+
+//change the Password After verifying OTP
+router.post("/verify-otp", checkMenteeOTPandNewPassword, changePasswordWithOTP);
 
 //Regenerate Access Token
 router.post("/regenerate_access_token", getNewAccessToken);
@@ -124,5 +134,5 @@ router
   .post(raiseATicketFromMenteeSide)
   .get(getTheListOfTicketsRaisedByAMentee);
 //Trail route
-router.route("/trail").get(trail);
+router.route("/trail").get(sentOTP).post(verifyOTP);
 module.exports = router;

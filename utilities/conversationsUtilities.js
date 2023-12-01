@@ -41,9 +41,13 @@ const fetchMenteeConversations = async (menteeId) => {
         path: "participants.mentor latestMessage",
         select:
           "firstName lastName profileImageUrl content createdAt updatedAt latestMessage.updatedAt",
-      })
-      .sort({ updatedAt: 1 });
-    return response;
+      });
+    const sortedRespose = response.sort((a, b) => {
+      const c = new Date(a.latestMessage.updatedAt);
+      const d = new Date(b.latestMessage.updatedAt);
+      return d.getTime() - c.getTime();
+    });
+    return sortedRespose;
   } catch (error) {
     throw error;
   }
@@ -61,10 +65,14 @@ const fetchMentorConversations = async (mentorId) => {
         path: "participants.mentee latestMessage",
         select:
           "firstName lastName content createdAt profileImageUrl updatedAt latestMessage.updatedAt",
-      })
-      .sort({ updatedAt: 1 });
-    console.log("Response", response);
-    return response;
+      });
+    // .sort({ updatedAt: -1 });
+    const sortedRespose = response.sort((a, b) => {
+      const c = new Date(a.latestMessage.updatedAt);
+      const d = new Date(b.latestMessage.updatedAt);
+      return d.getTime() - c.getTime();
+    });
+    return sortedRespose;
   } catch (error) {
     throw error;
   }

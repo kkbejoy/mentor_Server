@@ -1,5 +1,7 @@
 const { response } = require("express");
 const menteeSchema = require("../models/mentees");
+const { minTime } = require("date-fns");
+const bcrypt = require("bcrypt");
 
 //Get the List of all mentees With details
 const allMenteesWithDetails = async () => {
@@ -165,6 +167,40 @@ const getDetailsOfNewMenteeregistration = async () => {
     throw error;
   }
 };
+
+//Verify the existance of an activ Mentees with email
+
+const fetchMenteeWithEmailI = async (email) => {
+  try {
+    const menteeDetails = await menteeSchema.findOne({
+      email: email,
+      isActive: true,
+      isApproved: true,
+      isBlocked: false,
+    });
+    return menteeDetails;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const changeMenteePassword = async (phone, newPassword) => {
+  try {
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const responseFromDb = await menteeSchema.findOneAndUpdate(
+      { phone: phone },
+      {
+        password: hashedPassword,
+      }
+    );
+    return responseFromDb;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   allMenteesWithDetails,
   fetchMenteeProfileWithId,
@@ -175,4 +211,6 @@ module.exports = {
   addStripeIdToMentee,
   updateMenteeDetails,
   getDetailsOfNewMenteeregistration,
+  fetchMenteeWithEmailI,
+  changeMenteePassword,
 };

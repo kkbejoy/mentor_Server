@@ -1,23 +1,39 @@
-const
-const accountSid = "AC2a3ec1005ab6c0be48faeb35f66aa2f3";
-const authToken = "f7e625be97faca6c0cab087f4d97de37";
-const verifySid = "VA0c1fad06a350fa452ef889cb85b6b6d0";
+const { Sms } = require("twilio/lib/twiml/VoiceResponse");
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const serviceSid = process.env.TWILIO_SERVICE_SID;
 const client = require("twilio")(accountSid, authToken);
 
-client.verify.v2
-  .services(verifySid)
-  .verifications.create({ to: "+919400822788", channel: "sms" })
-  .then((verification) => console.log(verification.status))
-  .then(() => {
-    const readline = require("readline").createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-    readline.question("Please enter the OTP:", (otpCode) => {
-      client.verify.v2
-        .services(verifySid)
-        .verificationChecks.create({ to: "+919400822788", code: otpCode })
-        .then((verification_check) => console.log(verification_check.status))
-        .then(() => readline.close());
-    });
-  });
+// Sent code to phoine
+const sentOTP = async (phone) => {
+  try {
+    // console.log(phoneNumber);
+    const result = client.verify.v2
+      .services(serviceSid)
+      .verifications.create({ to: `+91${phone}`, channel: "sms" });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+// Verify Code function
+const verifyOTP = async (otp, phone) => {
+  try {
+    console.log("Type of", typeof otp);
+    const result = await client.verify.v2
+      .services(serviceSid)
+      .verificationChecks.create({ to: `+91${phone}`, code: otp });
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+module.exports = {
+  sentOTP,
+  verifyOTP,
+};
