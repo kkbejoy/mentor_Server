@@ -4,6 +4,7 @@ const {
 } = require("../../utilities/enrollmentUtilities");
 
 const { fetchSubsctiptionId } = require("../../utilities/paymentUtilities");
+
 //Approve Enrollment Field in Enrollment Document
 const approveEnrollementFromPaymentSuccess = async (req, res) => {
   try {
@@ -12,6 +13,8 @@ const approveEnrollementFromPaymentSuccess = async (req, res) => {
 
     const responseFromDb = await approveEnrollementStatus(mentorId, menteeId);
     const subscriptionId = await fetchSubsctiptionId(responseFromDb.checkoutId);
+
+    console.log("subscriptionId", subscriptionId, responseFromDb);
     await addSubscriptionId(responseFromDb._id, subscriptionId);
     return res.status(200).json({ status: true });
   } catch (error) {

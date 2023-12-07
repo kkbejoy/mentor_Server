@@ -23,6 +23,10 @@ const conversationsSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    enrollmentId: {
+      type: Types.ObjectId,
+      ref: "enrollment",
+    },
   },
   { timestamps: true }
 );

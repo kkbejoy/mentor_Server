@@ -7,7 +7,7 @@ const logger = require("morgan");
 const cors = require("cors");
 const hbs = require("express-hbs");
 const socketModule = require("./socketIo");
-
+const { scheduleEnrollmentCheck } = require("./utilities/scheduler");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 require("./config/passportLocalConfig");
 
@@ -48,7 +48,7 @@ app.use("/api/mentees", menteesRoutes);
 app.use("/api/mentors", mentorRoutes);
 app.use("/api/moderator", moderatorRoutes);
 app.use("/api/chats", chatRoutes);
-
+scheduleEnrollmentCheck();
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something went wrong!");

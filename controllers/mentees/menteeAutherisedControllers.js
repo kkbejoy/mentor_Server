@@ -15,6 +15,7 @@ const {
 
 const {
   getAllNotificationForAUser,
+  markAllNotificationsForThisMenteeAsRead,
 } = require("../../utilities/notificationUtilities");
 
 const {
@@ -109,6 +110,19 @@ const getAllNotifications = async (req, res) => {
   }
 };
 
+const markNotificationsAsRead = async (req, res) => {
+  try {
+    const { menteeId } = req.params;
+    const responseFromDb = await markAllNotificationsForThisMenteeAsRead(
+      menteeId
+    );
+    console.log("Notification read and unread", responseFromDb);
+    res.status(200).json({ status: true, notifications: responseFromDb });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false });
+  }
+};
 //Update Mentees Profile
 
 const updateProfile = async (req, res) => {
@@ -196,6 +210,7 @@ module.exports = {
   mentorsTimeSlotAvailabilityList,
   fixMentorTimeSlot,
   getAllNotifications,
+  markNotificationsAsRead,
   updateProfile,
   fetchBookedTimeSlots,
   revokeABooking,

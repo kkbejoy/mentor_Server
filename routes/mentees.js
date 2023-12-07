@@ -25,6 +25,7 @@ const {
   mentorsTimeSlotAvailabilityList,
   fixMentorTimeSlot,
   getAllNotifications,
+  markNotificationsAsRead,
   updateProfile,
   fetchBookedTimeSlots,
   revokeABooking,
@@ -48,7 +49,10 @@ const {
 } = require("../controllers/mentees/paymentControllers");
 
 const { sentOTP, verifyOTP } = require("../middlewares/twilio");
-// const { raiseATicket } = require("../utilities/ticketUtilities");
+const {
+  checkAndUpdateEnrolmentStatus,
+  enrolmentExpiredArray,
+} = require("../utilities/enrollmentUtilities");
 //Mentee Registration
 router.route("/register").post(menteeRegistrationRules, createMentee);
 
@@ -114,7 +118,11 @@ router.get(
   fetchListOfMentorsSubscribed
 );
 //Notifications
-router.route("/notifications/:menteeId").get(getAllNotifications);
+router
+  .route("/notifications/:menteeId")
+  .get(getAllNotifications)
+  .patch(markNotificationsAsRead);
+
 // Fetching Details of timeSlots for Mentees //Book Mentor from available Time slots  By Mentee
 router
   .route("/timeslots/:menteeId")
@@ -134,5 +142,5 @@ router
   .post(raiseATicketFromMenteeSide)
   .get(getTheListOfTicketsRaisedByAMentee);
 //Trail route
-router.route("/trail").get(sentOTP).post(verifyOTP);
+router.route("/trail").get(trail);
 module.exports = router;

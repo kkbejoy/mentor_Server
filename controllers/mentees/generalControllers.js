@@ -12,6 +12,8 @@ const { addStripeIdToMentee } = require("../../utilities/mentees");
 const {
   fetchAllMentorsWithTheirDetails,
   isEnrollmentActive,
+  enrolmentExpiredArray,
+  checkAndUpdateEnrolmentStatus,
 } = require("../../utilities/enrollmentUtilities");
 //Fetch Mentors Search Result
 const fetchMentorsSearchResult = async (req, res) => {
@@ -63,6 +65,8 @@ const fetchMentorProfileDetails = async (req, res) => {
 
 const trail = async (req, res) => {
   try {
+    const array1 = await enrolmentExpiredArray();
+    const ers = await checkAndUpdateEnrolmentStatus(array1);
     return res.status(200);
   } catch (error) {
     console.log("Error From trail Con", error);

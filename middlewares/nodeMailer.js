@@ -26,7 +26,7 @@ const sentMail = async (toEmail, subject, text) => {
     console.log("Message sent:", info.messageId, toEmail);
     return;
   } catch (error) {
-    console.log(error);
+    console.log("Node mailer Error:", error);
     throw error;
   }
 };

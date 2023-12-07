@@ -27,6 +27,7 @@ const {
 const {
   createEntollment,
   isEnrollmentActive,
+  updateCheckOutId,
 } = require("../../utilities/enrollmentUtilities");
 const { sentOTP, verifyOTP } = require("../../middlewares/twilio");
 
@@ -299,6 +300,8 @@ const stripeCheckoutSession = async (req, res) => {
     );
 
     const isAlreadyEnrolled = await isEnrollmentActive(mentorId, menteeId);
+    4;
+    console.log("Enrollment status:", isAlreadyEnrolled);
     if (isAlreadyEnrolled) {
       console.log("Already Enrolled", isAlreadyEnrolled);
       return res.status(409).json({
@@ -318,8 +321,16 @@ const stripeCheckoutSession = async (req, res) => {
       mentorId: mentorId,
       checkoutId: checkoutResponse.id,
     };
-    await createEntollment(enrollmentObject);
+    // await createEntollment(enrollmentObject);
     console.log("checkout res:", checkoutResponse);
+    if (isAlreadyEnrolled === false && isAlreadyEnrolled !== null) {
+      await updateCheckOutId(menteeId, mentorId, checkoutResponse?.id);
+      console.log("Enrollment Expired");
+    }
+    if (isAlreadyEnrolled === null) {
+      console.log("No enrollment exists");
+      await createEntollment(enrollmentObject);
+    }
     res.status(201).json({ status: true, url: checkoutResponse.url });
   } catch (error) {
     console.log(error);

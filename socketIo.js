@@ -27,7 +27,7 @@ module.exports = (server) => {
       console.log("Chat room creted" + rooms);
     });
     socket.on("new message", (newMessage) => {
-      console.log("new Message", newMessage);
+      console.log("Socket new Message", newMessage);
       const receiver = newMessage?.receiver;
       socket.in(receiver).emit("messageReveived", newMessage);
       // const roomId = newMessage?.conversation;
@@ -47,19 +47,23 @@ module.exports = (server) => {
     });
 
     socket.on("scheduler", (deleteNotification) => {
-      console.log("Scheduler", deleteNotification);
-      if (deleteNotification.menteeId) {
-        console.log("Scheduler Socket", deleteNotification.deleted);
+      console.log("Socket Scheduler", deleteNotification);
+      if (!deleteNotification) {
+        console.log("returned");
+        return;
+      }
+      if (deleteNotification.recipient) {
+        // console.log("Scheduler Socket", deleteNotificatio);
         socket
-          .in(deleteNotification.menteeId._id)
+          .in(deleteNotification.recipient)
           .emit("scheduler", deleteNotification);
       }
-      console.log("mentee Id absent");
+      console.log(" Socket mentee Id absent");
     });
     socket.on("slotBooked", (slotDetails) => {
-      console.log("slotBooked", slotDetails);
+      console.log(" Socket slotBooked", slotDetails);
       // if (deleteNotification.menteeId) {
-      console.log("Slot Booked", slotDetails);
+      console.log(" Socket Slot Booked", slotDetails);
       // socket
       //   .in(s.menteeId._id)
       //   .emit("scheduler", deleteNotification);

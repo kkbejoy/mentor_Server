@@ -10,7 +10,7 @@ const createEntollment = async (enrollmentObject) => {
   try {
     const newEnrollment = new enrollmentSchema(enrollmentObject);
     const response = await newEnrollment.save();
-    console.log("ertollment Response", response);
+    console.log("New Enrollment Created Response", response);
     return response;
   } catch (error) {
     console.log(error);
@@ -22,12 +22,19 @@ const createEntollment = async (enrollmentObject) => {
 
 const approveEnrollementStatus = async (mentorId, menteeId) => {
   try {
+    const currentDate = new Date();
+    const nextMonth = new Date(
+      currentDate.setMonth(currentDate.getMonth() + 1)
+    );
     const response = await enrollmentSchema.findOneAndUpdate(
       {
         mentorId: mentorId,
         menteeId: menteeId,
       },
-      { isEnrollmentActive: true }
+      {
+        isEnrollmentActive: true,
+        expiresOn: nextMonth,
+      }
     );
     console.log("Approval Enrollment ", response);
     return response;
@@ -148,7 +155,7 @@ const isEnrollmentActive = async (mentorId, menteeId) => {
       menteeId: menteeId,
       mentorId: mentorId,
     });
-
+    console.log(enrollmentDetails);
     if (!enrollmentDetails) return null;
     if (enrollmentDetails.isEnrollmentActive) return true;
     return false;
@@ -266,6 +273,61 @@ const getDailyNewEnrollments = async () => {
   }
 };
 
+//Returns an Array of Entollment ids that needs to be Unenrolled based on the exporation date
+
+const enrolmentExpiredArray = async () => {
+  try {
+    const dateNow = new Date();
+
+    const enrollments = await enrollmentSchema.find({
+      expiresOn: { $lt: dateNow },
+      isEnrollmentActive: true,
+    });
+
+    const expiredIdArray = enrollments?.map((enrolment) => enrolment._id);
+    console.log(
+      "List of enrollmment id that require sto be unenroledd",
+      expiredIdArray
+    );
+    return expiredIdArray;
+  } catch (error) {}
+};
+
+//Daily Enrollment field Updation
+
+const checkAndUpdateEnrolmentStatus = async (idArray) => {
+  try {
+    const responseFromDb = await enrollmentSchema.updateMany(
+      { _id: { $in: idArray } },
+      { isEnrollmentActive: false }
+    );
+
+    console.log("Respose From Status Update:", responseFromDb);
+    return responseFromDb;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//Update CheckOut Id from the stripe to the Enrollment DOCUMENT
+
+const updateCheckOutId = async (menteeId, mentorId, newCheckOutId) => {
+  try {
+    const resposedfromDb = await enrollmentSchema.updateOne(
+      {
+        menteeId,
+        mentorId,
+      },
+      {
+        checkoutId: newCheckOutId,
+      }
+    );
+    console.log("Checkout filed Updatation:", resposedfromDb);
+    return resposedfromDb;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   createEntollment,
   approveEnrollementStatus,
@@ -277,4 +339,7 @@ module.exports = {
   isEnrollmentActive,
   getDailyEnrollmentsForAParticularMentor,
   getDailyNewEnrollments,
+  enrolmentExpiredArray,
+  checkAndUpdateEnrolmentStatus,
+  updateCheckOutId,
 };

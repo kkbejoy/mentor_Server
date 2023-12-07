@@ -11,7 +11,7 @@ const enrollmentSchema = new Schema(
     },
     expiresOn: {
       type: Date,
-      default: Date.now(),
+      // default: Date.now(),
     },
     subscriptionId: {
       type: String,

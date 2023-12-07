@@ -32,7 +32,28 @@ const getAllNotificationForAUser = async (userId) => {
     throw error;
   }
 };
+
+const markAllNotificationsForThisMenteeAsRead = async (menteeId) => {
+  try {
+    const oneMinuteAgo = new Date();
+    oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
+    const responseFromDb = await notificationSchema.updateMany(
+      {
+        recipient: menteeId,
+        createdAt: {
+          // $gte: oneMinuteAgo,
+          $lt: oneMinuteAgo,
+        },
+      },
+      { isRead: true }
+    );
+    return responseFromDb;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   addNewNotification,
   getAllNotificationForAUser,
+  markAllNotificationsForThisMenteeAsRead,
 };

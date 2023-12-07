@@ -76,12 +76,12 @@ const deleteSlot = async (req, res) => {
     const slotDetails = await fetchSlotDetailsWithId(slotId);
     let responseFromDb = await deleteSlotWithId(slotId);
     console.log("Slot delete reso", slotId);
-
+    let notifyMentee;
     if (slotDetails.menteeId._id !== null) {
       console.log("Entered into notifications");
       const type = "alert";
       const content = `One of the live sessions agreed has been postponed by the ${slotDetails.mentorId.firstName} ${slotDetails.mentorId.lastName}. Please check your scheduler for more info `;
-      const notifyMentee = await addNewNotification(
+      notifyMentee = await addNewNotification(
         slotDetails.menteeId._id,
         "mentee",
         content,
@@ -95,7 +95,7 @@ const deleteSlot = async (req, res) => {
     }
     responseFromDb.deleted = true;
 
-    return res.status(200).json({ status: true, responseFromDb });
+    return res.status(200).json({ status: true, responseFromDb, notifyMentee });
   } catch (error) {
     console.log(error);
     return res
