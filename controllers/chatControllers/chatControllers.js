@@ -22,6 +22,11 @@ const {
   fetchEnrollment,
   isEnrollmentActive,
 } = require("../../utilities/enrollmentUtilities");
+const {
+  fetchSlotDetailsWithId,
+  checkLiveSlotCredentials,
+} = require("../../utilities/slotAppointmentUtilities");
+const { default: mongoose } = require("mongoose");
 //might become useless. Make sure to include the new chat creation somewhere else in that case
 const getChatBetweenMentorAndMentee = async (req, res) => {
   try {
@@ -267,6 +272,21 @@ const fetchMentorUnreadConversations = async (req, res) => {
   }
 };
 
+//Verify the slot Credentials
+const verifyVideoCallSlot = async (req, res) => {
+  try {
+    const { slotId, userId } = req.body;
+    // const slotDetails = await fetchSlotDetailsWithId(slotId);
+    console.log("Slot Details:", slotId, userId);
+    const slotDetails = await checkLiveSlotCredentials(slotId, userId);
+    if (!slotDetails) throw new Error("No such Slot exists");
+    console.log("Slot Details:", slotDetails, userId);
+    res.status(200).json({ status: true });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false, error });
+  }
+};
 module.exports = {
   getChatBetweenMentorAndMentee,
   markConversationAsReadMenteeSide,
@@ -278,4 +298,5 @@ module.exports = {
   getAllMessages,
   fetchMenteeUnreadConversations,
   fetchMentorUnreadConversations,
+  verifyVideoCallSlot,
 };

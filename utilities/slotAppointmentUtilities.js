@@ -236,6 +236,20 @@ const fetchSessionWithDate = async (mentorId, date) => {
     throw error;
   }
 };
+
+const checkLiveSlotCredentials = async (slotId, userId) => {
+  try {
+    const currentTime = Date.now();
+    const responseFromDb = await slotAppointmentModel.findOne({
+      _id: slotId,
+      $or: [{ menteeId: userId }, { mentorId: userId }],
+      $and: [{ start: { $lt: currentTime } }, { end: { $gt: currentTime } }],
+    });
+    return responseFromDb;
+  } catch (error) {
+    throw error;
+  }
+};
 module.exports = {
   createMentorAvailableSlot,
   updateMentorAvailbaleSlot,
@@ -253,4 +267,5 @@ module.exports = {
   getAllBookedSlotsByThisMentee,
   revokeABookingByThisMentee,
   fetchSessionWithDate,
+  checkLiveSlotCredentials,
 };

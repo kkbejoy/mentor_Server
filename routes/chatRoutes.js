@@ -11,6 +11,7 @@ const {
   getAllMessages,
   pushNewMessageFromMentor,
   markConversationAsReadMentorSide,
+  verifyVideoCallSlot,
 } = require("../controllers/chatControllers/chatControllers");
 const checkEnrollmentStatus = require("../middlewares/checkEnrollmentStatus");
 const { menteeAuthMiddleware } = require("../config/passportJWT");
@@ -53,4 +54,6 @@ router
   .get(mentorAuthMiddleware, getAllMessages)
   .patch(markConversationAsReadMentorSide);
 
+//Verify the slot id with userId and time
+router.post("/verify-live", verifyVideoCallSlot);
 module.exports = router;
