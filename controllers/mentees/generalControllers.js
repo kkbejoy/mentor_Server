@@ -65,9 +65,8 @@ const fetchMentorProfileDetails = async (req, res) => {
 
 const trail = async (req, res) => {
   try {
-    const array1 = await enrolmentExpiredArray();
-    const ers = await checkAndUpdateEnrolmentStatus(array1);
-    return res.status(200);
+    console.log("Rate limiter check");
+    return res.status(200).json({ status: true });
   } catch (error) {
     console.log("Error From trail Con", error);
     return res.status(400).json({ error: "Operation failed" });

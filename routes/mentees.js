@@ -53,8 +53,10 @@ const {
   checkAndUpdateEnrolmentStatus,
   enrolmentExpiredArray,
 } = require("../utilities/enrollmentUtilities");
+
+const { limiter } = require("../middlewares/expressRateLimiter");
 //Mentee Registration
-router.route("/register").post(menteeRegistrationRules, createMentee);
+router.route("/register").post(menteeRegistrationRules, limiter, createMentee);
 
 //Mentee Email Verification
 router.get("/verify/:jwt", verifyEmailIdFromJWT);
@@ -63,12 +65,13 @@ router
   .route("/login")
   .post(
     menteeLoginRules,
+    limiter,
     passport.authenticate("local", { session: false }),
     getMenteeTokens
   );
 
 //Mentee OTP Genereation
-router.post("/sent-otp", menteeSendOTPForForgotPassword);
+router.post("/sent-otp", limiter, menteeSendOTPForForgotPassword);
 
 //change the Password After verifying OTP
 router.post("/verify-otp", checkMenteeOTPandNewPassword, changePasswordWithOTP);
@@ -142,5 +145,5 @@ router
   .post(raiseATicketFromMenteeSide)
   .get(getTheListOfTicketsRaisedByAMentee);
 //Trail route
-router.route("/trail").get(trail);
+router.route("/trail").get(limiter, trail);
 module.exports = router;

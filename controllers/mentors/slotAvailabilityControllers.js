@@ -14,6 +14,7 @@ const createNewAvailbleSlotForMentor = async (req, res) => {
     const { slotDetails, mentorId } = req.body;
 
     slotDetails.mentorId = mentorId;
+
     const currentTime = new Date();
     const slotTime = new Date(slotDetails.start);
     const isPossible = slotTime > currentTime;

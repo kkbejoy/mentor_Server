@@ -114,7 +114,7 @@ const getMenteeTokens = async (req, res) => {
     console.log("hello");
     const { email, password } = req.body;
     const existingUser = await menteeSchema.findOne({ email: email });
-    const { _id, firstName } = existingUser;
+    const { _id, firstName, profileImageUrl } = existingUser;
     console.log(_id, email, firstName);
 
     const accessToken = await generateAccessToken({
@@ -133,6 +133,7 @@ const getMenteeTokens = async (req, res) => {
       menteeId: _id,
       accessToken: accessToken,
       refreshToken: refreshToken,
+      profileImageUrl: profileImageUrl,
       message: "Login Successfull",
     });
   } catch (error) {
@@ -161,7 +162,6 @@ const menteeLogout = async (req, res) => {
 const getNewAccessToken = async (req, res) => {
   try {
     const { refreshToken } = req.body;
-    console.log(req.body);
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY);
     const token = await findRefreshToken(refreshToken);
     if (!token) {
@@ -170,8 +170,6 @@ const getNewAccessToken = async (req, res) => {
         message: "Refresh token expired. Please Login Again",
       });
     }
-    console.log("decoded JWT", decoded);
-
     const menteeDetails = await menteeSchema.findById(decoded.id);
     const { id, email, firstName } = menteeDetails;
     const newAccessToken = await generateAccessToken({
@@ -201,9 +199,7 @@ const getNewAccessToken = async (req, res) => {
 
 const googleAuthSuccess = async (req, res) => {
   try {
-    console.log("Google auth controller function");
     const { email, _id: menteeId, firstName: menteeName } = req.user;
-    console.log("mentee name", menteeId, menteeName);
 
     const accessToken = await generateAccessToken({
       id: menteeId,
@@ -291,19 +287,10 @@ const stripeCheckoutSession = async (req, res) => {
     const { stripeId, firstName, email } = await fetchMenteeDataFromId(
       menteeId
     );
-    console.log(
-      "Details to Checkout",
-      mentorPriceId,
-      menteeId,
-      mentorId,
-      email
-    );
 
     const isAlreadyEnrolled = await isEnrollmentActive(mentorId, menteeId);
     4;
-    console.log("Enrollment status:", isAlreadyEnrolled);
     if (isAlreadyEnrolled) {
-      console.log("Already Enrolled", isAlreadyEnrolled);
       return res.status(409).json({
         status: false,
         message: "Subscription Active",
@@ -322,13 +309,10 @@ const stripeCheckoutSession = async (req, res) => {
       checkoutId: checkoutResponse.id,
     };
     // await createEntollment(enrollmentObject);
-    console.log("checkout res:", checkoutResponse);
     if (isAlreadyEnrolled === false && isAlreadyEnrolled !== null) {
       await updateCheckOutId(menteeId, mentorId, checkoutResponse?.id);
-      console.log("Enrollment Expired");
     }
     if (isAlreadyEnrolled === null) {
-      console.log("No enrollment exists");
       await createEntollment(enrollmentObject);
     }
     res.status(201).json({ status: true, url: checkoutResponse.url });
@@ -353,7 +337,6 @@ const menteeSendOTPForForgotPassword = async (req, res) => {
       throw new Error("Failed to sent OTP");
     }
 
-    console.log(email, isMenteeExistsOrNot, sentOTPStatus);
     return res
       .status(200)
       .json({ status: true, message: "OTP has been sent to mobile number" });
@@ -371,15 +354,12 @@ const changePasswordWithOTP = async (req, res) => {
     const isMenteeExistsOrNot = await fetchMenteeWithEmailI(email);
     const phone = isMenteeExistsOrNot?.phone;
 
-    console.log(otp, password);
     const otpVerificationStatus = await verifyOTP(otp, phone);
     if (!otpVerificationStatus) {
       return res.status(401).json({ status: false, message: "Ente valid OTP" });
     }
-    console.log("Result of OTP verifications", otpVerificationStatus);
 
     const responseFromDb = await changeMenteePassword(phone, password);
-    console.log("response from pass", responseFromDb);
     // return res.status(200).json({ status: true, message: "Password changed" });
   } catch (error) {
     console.log(error);
