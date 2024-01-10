@@ -360,6 +360,7 @@ const changePasswordWithOTP = async (req, res) => {
     }
 
     const responseFromDb = await changeMenteePassword(phone, password);
+
     // return res.status(200).json({ status: true, message: "Password changed" });
   } catch (error) {
     console.log(error);
