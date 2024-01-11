@@ -139,7 +139,8 @@ const enrollmentsWithMenteeDetails = async (mentorId) => {
   try {
     const enrollments = await enrollmentSchema
       .find({ mentorId: mentorId })
-      .populate({ path: "menteeId", select: ["firstName", "lastName"] });
+      .populate({ path: "menteeId", select: ["firstName", "lastName"] })
+      .sort({ createdAt: -1 });
     return enrollments;
   } catch (error) {
     console.log(error);

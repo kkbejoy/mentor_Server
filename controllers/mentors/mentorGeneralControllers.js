@@ -63,7 +63,7 @@ const fetchSubscribedMentees = async (req, res) => {
     // const menteesList = await fetchMenteeDetailsFromArray(menteesArray);
 
     const enrolledMentees = await enrollmentsWithMenteeDetails(mentorId);
-    console.log("Response from utilities", enrolledMentees);
+    // console.log("Subscribed mentees List:", enrolledMentees);
     return res.status(200).json({ status: true, enrolledMentees });
   } catch (error) {
     console.log(error);
