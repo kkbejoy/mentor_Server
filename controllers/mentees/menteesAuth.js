@@ -64,7 +64,7 @@ const createMentee = async (req, res) => {
     // const newEmail = "kkbejoy@ymail.com";
     const jwt = await geneateJwtForEmailVerification({ firstName, email });
     console.log("Jwt", jwt);
-    const message = ` Good morning ${firstName}. Your account has been successfully created. Please go to this link to verify your account. ${process.env.CLIENT_url}/api/mentees/verify/${jwt}`;
+    const message = ` Good morning ${firstName}. Your account has been successfully created. Please go to this link to verify your account. ${process.env.SERVER_url}/api/mentees/verify/${jwt}`;
     await sentMail(email, "Verfication", message); //Sending Acknowlkegment with Link for verification mail to the user
 
     return res.status(201).json({
