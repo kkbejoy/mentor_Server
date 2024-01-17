@@ -89,8 +89,8 @@ const fetchMentorConversations = async (mentorId) => {
       });
     // .sort({ updatedAt: -1 });
     const sortedRespose = response.sort((a, b) => {
-      const c = new Date(a.latestMessage.updatedAt);
-      const d = new Date(b.latestMessage.updatedAt);
+      const c = new Date(a.latestMessage?.updatedAt);
+      const d = new Date(b.latestMessage?.updatedAt);
       return d.getTime() - c.getTime();
     });
     return sortedRespose;
