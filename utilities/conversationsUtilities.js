@@ -64,8 +64,8 @@ const fetchMenteeConversations = async (menteeId) => {
           "firstName lastName profileImageUrl content createdAt updatedAt latestMessage.updatedAt isRead   sender.senderType",
       });
     const sortedRespose = response.sort((a, b) => {
-      const c = new Date(a.latestMessage.updatedAt);
-      const d = new Date(b.latestMessage.updatedAt);
+      const c = new Date(a.latestMessage?.updatedAt);
+      const d = new Date(b.latestMessage?.updatedAt);
       return d.getTime() - c.getTime();
     });
     return sortedRespose;
