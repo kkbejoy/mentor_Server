@@ -17,6 +17,7 @@ try {
           const mentee = await Mentee.findOne({
             email: username,
             isBlocked: false,
+            isApproved: true,
           });
           console.log("mentee", mentee);
           if (!mentee) {
