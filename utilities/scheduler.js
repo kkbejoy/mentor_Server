@@ -6,7 +6,7 @@ const {
 const { sentMail } = require("../middlewares/nodeMailer");
 const scheduleEnrollmentCheck = async () => {
   try {
-    schedule.scheduleJob("00 12 * * *", async () => {
+    schedule.scheduleJob("003 11 * * *", async () => {
       console.log("Scheduled Job started working");
       const enrolmentIdArray = await enrolmentExpiredArray();
       const updateEnrolmentStatus = await checkAndUpdateEnrolmentStatus(

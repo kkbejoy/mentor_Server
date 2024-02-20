@@ -104,7 +104,7 @@ const mentorLogin = async (req, res) => {
       });
     }
 
-    const { _id, firstName } = mentor;
+    const { _id, firstName, profileImageUrl } = mentor;
     console.log(_id, email, firstName);
 
     const accessToken = await generateAccessToken({
@@ -123,6 +123,7 @@ const mentorLogin = async (req, res) => {
       mentorId: _id,
       mentorAccessToken: accessToken,
       mentorRefreshToken: refreshToken,
+      profileImageUrl: profileImageUrl,
       message: "Login Successfull",
     });
   } catch (error) {
